@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    "{{channel.title}}" info
+{% endblock title %}
+
+{% block content %}    
+    <div class="channel-detail container">
+        <div class="row banner">
+            <img src="{{channel.banner_photo}}" alt="banner">
+        </div>
+        <div class="channel-info row mt-5">
+            <div class="channel-img col-1 offset-4">
+                <img src="{{channel.photo}}" alt="channel photo" width="110" height="110" class="round">
+            </div>
+            <div class="channel-bio col-5 ml-5">
+                <div class="title">
+                    <h5>{{channel.title}}</h5>
+                </div>
+                <div class="channel-subscribers">
+                    Подписчиков: {{channel.subscribers_count}}
+                </div>
+                <div class="channel-views-count">
+                    Просмотров: {{channel.views_count}}
+                </div>
+                <div class="channel-videos-count">
+                    Видео: {{channel.videos_count}}
+                </div>
+            </div>            
+        </div>         
+    </div>
+    <div class="row videos-block ml-3">
+        {% for page in channel.pages_list.all %}              
+                {% for video in page.videos_list.all%}
+                    {% include 'AccountInfo/include/video-card.html' %}   
+                {% endfor %}  
+        {% endfor %} 
+    </div>
+    <form method="POST" class="row next-videos-page-form">
+        {% csrf_token %}
+        <input type="hidden" name="next-videos-page-token" value="{{page_token}}" class='next-page-token'>
+        <button class="btn btn-primary next-videos-page-btn">Загрузить еще</button>                    
+    </form> 
+    <script src="{% static 'js/channelInfo/channelInfo.js'%}"></script>     
+        
+{% endblock content %}

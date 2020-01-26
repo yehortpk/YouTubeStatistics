@@ -1,0 +1,29 @@
+<div class="card video-card ml-5 mt-5" style="width: 18rem;" data-video-id={{video.video_id}} data-page-token={{video.page.current_page_token}}>
+    <img src="{{video.photo}}" class="card-img-top" alt="video-img">
+    <div class="card-body">
+      <div class="detail-info-block">
+        <div class="views-count-block">
+          Просмотров: {{video.views_count}}
+        </div>
+        <div class="comments-count-block">
+          Комментариев: {{video.comments_count}}
+        </div>
+      </div>
+      <h5 class="card-title">
+        <a href="https://www.youtube.com/watch?v={{video.video_id}}" target="_blank">
+          {{video.title}}
+        </a>
+      </h5>
+
+      <div class="rating-block row ml-3">
+          <div class="likes-block">
+            <p>{{video.likes_count}}</p>
+            <div class="likes-count-block" style="width: {{video.average_likes}}px;"></div>
+          </div>
+          <div class="dislikes-block">
+            <p>{{video.dislikes_count}}</p>
+            <div class="dislikes-count-block" style="width: {{video.average_dislikes}}px;"></div>
+          </div>
+      </div>
+    </div>
+</div>

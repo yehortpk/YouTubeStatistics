@@ -1,0 +1,20 @@
+<div class="channel-card" data-page-token={{channel.page.current_page_token}} data-channel-id={{channel.channel_id}}>
+    <div class="row">
+        <div class="channel-card-photo col-4">
+            <img src="{{channel.photo}}" alt='Channel photo'>
+        </div>
+        <div class="channel-card-body col-8">
+            <div class="channel-title row">
+                <a href="{% url 'channel_info_url' channel_id=channel.channel_id %}" target="_blank">
+                    {{channel.title}}
+                </a>
+            </div>
+            <div class="channel-info row">
+                <span>Видео: {{channel.videos_count}}</span>
+            </div>
+            <div class="channel-url row">
+                <a href="{{channel.channel_url}}">Ссылка на канал</a>
+            </div>
+        </div>
+    </div>    
+</div>
