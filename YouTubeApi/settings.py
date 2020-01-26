@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -126,7 +127,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
