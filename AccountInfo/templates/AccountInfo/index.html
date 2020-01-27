@@ -6,13 +6,13 @@
 {% endblock title %}
 
 {% block content %}
-    <form method="POST" class="log-in-form" data-url={{authorization_url}}>
+    <form method="GET" class="log-in-form" data-url={{authorization_url}}>
         {% csrf_token %}
         <button class="btn btn-primary log-in-btn" {% if is_authorized %} style='display:none;' {% endif %}>
             Войти
         </button> 
     </form>
-    <form method="GET" class="log-out-form">
+    <form method="POST" class="log-out-form">
         {% csrf_token %}
         <button class="btn btn-primary log-out-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
             Выйти
