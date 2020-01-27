@@ -12,7 +12,7 @@
             Войти
         </button> 
     </form>
-    <form method="POST" class="log-out-form">
+    <form method="GET" class="log-out-form">
         {% csrf_token %}
         <button class="btn btn-primary log-out-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
             Выйти
