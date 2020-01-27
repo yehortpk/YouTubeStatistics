@@ -19,7 +19,7 @@ class ApiMethods:
     def connect(request):        
         if request.session.get('credentials') == None:
             flow = ApiMethods.get_flow()[0]
-            credentials = flow.run_local_server(open_browser=True)
+            credentials = flow.run_local_server(host='youtube-analytics.herokuapp.com', open_browser=True)
             
             request.session['credentials'] = {
                 'token': credentials.token,
