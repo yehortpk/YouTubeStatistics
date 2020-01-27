@@ -337,3 +337,6 @@ def get_policy(request):
 
 def get_terms(request):
     return render(request, 'AccountInfo/terms.html')
+
+def confirm_html(request):
+    return render(request, 'AccountInfo/include/google34ecf22213c98a0d.html')

@@ -13,4 +13,5 @@ urlpatterns = [
     path('log_out/', AccountDetail.log_out, name = 'log_out_url'),
     path('policy', get_policy, name='policy_url'),
     path('terms', get_terms, name='terms_url'),
+    path('google34ecf22213c98a0d.html', confirm_html, name='confirm_html_url'),
 ]
