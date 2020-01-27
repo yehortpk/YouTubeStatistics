@@ -18,7 +18,7 @@ class ApiMethods:
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
             client_secrets_file, scopes)
         if request.session.get('credentials') == None:
-            credentials = flow.run_local_server()
+            credentials = flow.run_local_server(open_browser=True)
             
             request.session['credentials'] = {
                 'token': credentials.token,
