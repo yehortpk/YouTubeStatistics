@@ -12,13 +12,16 @@ CHANNEL_PAGE_MAX_RESULTS = 15
 class AccountDetail(View):
     def get(self, request):
         if(request.session.get('credentials') != None and request.session['credentials'].get('account_id') != None):
-            ApiMethods.connect(request)
             my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
             next_page_token = my_account.pages_list.last().next_page_token
             return render(request, "AccountInfo/index.html", context={'channels': my_account.subscriptions.all(),
                                                                       'is_authorized': True,
-                                                                      'page_token': next_page_token})                                                        
-        return render(request, "AccountInfo/index.html", context={'is_authorized': False})
+                                                                      'page_token': next_page_token,
+                                                                      })
+
+        authorization_url = ApiMethods.get_flow()[1]                                                    
+        return render(request, "AccountInfo/index.html", context={'is_authorized': False, 
+                                                                    'authorization_url': authorization_url})
 
     @staticmethod
     def log_in(request):
@@ -294,7 +297,7 @@ class ChannelsPageDetail():
         return self.get_page()
 
 def create_channels_page(request, page_token):
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'GET' and request.is_ajax():
         account_id = request.session['credentials']['account_id']
         channels_page = ChannelsPageDetail(account_id = account_id, 
                                                 page_token = page_token)

@@ -3,22 +3,23 @@ import os
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
+import json
+
+scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+api_service_name = "youtube"
+api_version = "v3"
+client_secrets_file = "static/info.json"
+redirect_uri = 'http%3A%2F%2Flocalhost%3A8080%2F'
 
 class ApiMethods:
     youtube = None
     @staticmethod
-    def connect(request):
-        scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
-        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-
-        api_service_name = "youtube"
-        api_version = "v3"
-        client_secrets_file = "static/info.json"
-        
-        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file, scopes)
+    def connect(request):        
         if request.session.get('credentials') == None:
-            credentials = flow.run_local_server(host='https://youtube-analytics.herokuapp.com/', open_browser=True)
+            flow = ApiMethods.get_flow()[0]
+            credentials = flow.run_local_server(open_browser=True)
             
             request.session['credentials'] = {
                 'token': credentials.token,
@@ -40,6 +41,14 @@ class ApiMethods:
                                       scopes=credentials_dict['scopes'])
 
         ApiMethods.youtube = googleapiclient.discovery.build(api_service_name, api_version, credentials=credentials)
+
+    @staticmethod
+    def get_flow():        
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+            client_secrets_file, scopes)
+
+        authorization_url = flow.authorization_url()[0] + '&redirect_uri=' + redirect_uri
+        return flow, authorization_url
 
     @staticmethod
     def get_my_channel_info():

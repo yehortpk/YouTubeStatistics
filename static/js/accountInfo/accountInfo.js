@@ -109,13 +109,16 @@ $('.log-out-btn').click(function(e){
     });
 });
 
-$('.log-in-btn').click(function(e){            
+$('.log-in-btn').click(function(e){
+    var url = $('.log-in-form').data('url');
+    console.log(url);
+    window.open(url, 'Authorization', "width=200,height=200");            
     e.preventDefault();
     $.ajax({
-        type: 'POST',
+        type: 'GET',
         url: '/log_in/',
         async: true,
-        data: $(this).parent().serialize(),
+        data: $('.log-in-form').parent().serialize(),
         success: function(responseData){ 
             $('.channels-block').empty();
             $('.log-in-btn').css('display', 'none');

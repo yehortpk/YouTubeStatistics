@@ -6,7 +6,7 @@
 {% endblock title %}
 
 {% block content %}
-    <form method="POST" class="log-in-form">
+    <form method="POST" class="log-in-form" data-url={{authorization_url}}>
         {% csrf_token %}
         <button class="btn btn-primary log-in-btn" {% if is_authorized %} style='display:none;' {% endif %}>
             Войти
