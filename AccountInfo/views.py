@@ -328,3 +328,9 @@ def update_videos_page(request, channel_id, page_token):
         return JsonResponse(data=videos_page.get_current_page())
     else:
         return HttpResponseForbidden()
+
+def get_policy(request):
+    return render(request, 'AccountInfo/policy.html')
+
+def get_terms(request):
+    return render(request, 'AccountInfo/terms.html')

@@ -11,4 +11,6 @@ urlpatterns = [
     path('update_channels_page/<page_token>', update_channels_page),
     path('log_in/', AccountDetail.log_in, name = 'log_in_url'),
     path('log_out/', AccountDetail.log_out, name = 'log_out_url'),
+    path('policy', get_policy, name='policy_url'),
+    path('terms', get_terms, name='terms_url'),
 ]
