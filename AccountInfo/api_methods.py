@@ -20,19 +20,11 @@ class ApiMethods:
     @staticmethod
     def connect(request, authorization_response=None, state=None):   
         if request.session.get('credentials') == None:
-            # _, flow = ApiMethods.get_flow(request)
-
             flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
                                                 client_secrets_file, 
                                                 scopes,
                                                 state=state)
-            flow.redirect_uri = redirect_uri
-
-            # user_info = json.load(open(client_secrets_file))['web']
-            # token_uri = user_info['token_uri']
-            # client_id = user_info['client_id']
-            # client_secret = user_info['client_secret']
-
+            flow.redirect_uri = redirect_uri            
             access_token = flow.fetch_token(authorization_response=authorization_response)
             credentials = flow.credentials
             
@@ -45,15 +37,15 @@ class ApiMethods:
                 'client_secret': credentials.client_secret,
                 'scopes': scopes
             }
-            
-        else:
-            credentials_dict = request.session.get('credentials')
-            credentials = Credentials(token=credentials_dict['token'],
-                                      refresh_token=credentials_dict['refresh_token'],
-                                      token_uri=credentials_dict['token_uri'],
-                                      client_id=credentials_dict['client_id'],
-                                      client_secret=credentials_dict['client_secret'],
-                                      scopes=credentials_dict['scopes'])
+
+        credentials_dict = request.session.get('credentials')
+        credentials = Credentials(token=credentials_dict['token'],
+                                    refresh_token=credentials_dict['refresh_token'],
+                                    token_uri=credentials_dict['token_uri'],
+                                    client_id=credentials_dict['client_id'],
+                                    client_secret=credentials_dict['client_secret'],
+                                    scopes=credentials_dict['scopes'])
+
         ApiMethods.youtube = googleapiclient.discovery.build(api_service_name, api_version, credentials=credentials)
 
     @staticmethod

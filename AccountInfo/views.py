@@ -12,8 +12,10 @@ CHANNEL_PAGE_MAX_RESULTS = 15
 class AccountDetail(View):
     def get(self, request):
         if(request.session.get('credentials') != None and request.session['credentials'].get('account_id') != None):
+            ApiMethods.connect(request)
             my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
             next_page_token = my_account.pages_list.last().next_page_token
+            print(my_account.subscriptions.all())
             return render(request, "AccountInfo/index.html", context={'channels': my_account.subscriptions.all(),
                                                                       'is_authorized': True,
                                                                       'page_token': next_page_token,

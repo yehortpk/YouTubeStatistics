@@ -5,8 +5,8 @@
         </div>
         <div class="channel-card-body col-8">
             <div class="channel-title row">
-                <a href="{% url 'channel_info_url' channel_id=channel.channel_id %}" target="_blank">
-                    {{channel.title}}
+                <a href="{% url 'channel_info_url' channel_id=channel.channel_id %}" target="_blank" title="{{channel.title}}">
+                    {{channel.title|truncatechars:30}}
                 </a>
             </div>
             <div class="channel-info row">

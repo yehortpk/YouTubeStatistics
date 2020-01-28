@@ -1,12 +1,14 @@
 const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
-const LAST_PAGE_TOKEN = 'Last' 
+const LAST_PAGE_TOKEN = 'Last'
+var authWindow; 
 
 function getNewChannelsHTML(data){
     var newChannelsHTML = '';
     for(var channel_id in data){
         var channel = data[channel_id];
+        channel.title = channel.title.slice(0, 30);
         newChannelsHTML +=`<div class="channel-card" data-page-token=${channel.page_token}>`+
                                 `<div class="row">`+
                                     `<div class="channel-card-photo col-4">`+
@@ -14,7 +16,7 @@ function getNewChannelsHTML(data){
                                     `</div>`+
                                     `<div class="channel-card-body col-8">`+
                                         `<div class="channel-title row">`+
-                                            `<a href="/channel_id/${channel_id}" target="_blank">`+
+                                            `<a href="/channel_id/${channel_id}" target="_blank" title="${channel.title}">`+
                                                 `${channel.title}`+
                                             `</a>`+
                                         `</div>`+
@@ -105,34 +107,14 @@ $('.log-out-btn').click(function(e){
             $('.log-out-btn').css('display', 'none');                
             $(".next-channels-page-btn").css('display', 'none');
             setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
+            window.close();
         }
     });
 });
 
 $('.log-in-btn').click(function(e){
     var url = $('.log-in-btn').data('url');
-    var authWindow = window.open(url, 'Authorization', "width=400,height=400");
-    // $(authWindow).on("beforeunload", function() { 
-    //     e.preventDefault();
-    //     $.ajax({
-    //         type: 'POST',
-    //         url: '/log_in/',
-    //         async: true,
-    //         data: $('.log-in-form').serialize(),
-    //         success: function(responseData){
-    //             authWindow.close(); 
-    //             $('.channels-block').empty();
-    //             $('.log-in-btn').css('display', 'none');
-    //             $('.log-out-btn').css('display', 'block');
-    //             $('.channels-block').append(getNewChannelsHTML(responseData['data']));  
-    //             $('.next-page-token').val(responseData['next_page_token']);                 
-    //             if(responseData['next_page_token'] != LAST_PAGE_TOKEN){                   
-    //                 $(".next-channels-page-btn").css('display', 'block');
-    //             }
-    //             setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
-    //         }
-    //     });
-    // })
+    authWindow = window.open(url, 'Authorization', "width=400,height=400");
 })
 
 $(document).ready(function (){
@@ -143,3 +125,25 @@ $(document).ready(function (){
         $(".next-channels-page-btn").css('display', 'block');
         
 });
+
+// $(authWindow).on("beforeunload", function() { 
+//     e.preventDefault();
+//     $.ajax({
+//         type: 'POST',
+//         url: '/log_in/',
+//         async: true,
+//         data: $('.log-in-form').serialize(),
+//         success: function(responseData){
+//             authWindow.close(); 
+//             $('.channels-block').empty();
+//             $('.log-in-btn').css('display', 'none');
+//             $('.log-out-btn').css('display', 'block');
+//             $('.channels-block').append(getNewChannelsHTML(responseData['data']));  
+//             $('.next-page-token').val(responseData['next_page_token']);                 
+//             if(responseData['next_page_token'] != LAST_PAGE_TOKEN){                   
+//                 $(".next-channels-page-btn").css('display', 'block');
+//             }
+//             setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
+//         }
+//     });
+// })
