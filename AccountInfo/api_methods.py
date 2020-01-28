@@ -13,6 +13,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 api_service_name = "youtube"
 api_version = "v3"
 client_secrets_file = "static/info.json"
+redirect_uri = 'https://youtube-analytics.herokuapp.com/get_token/'
 
 class ApiMethods:
     youtube = None
@@ -25,7 +26,7 @@ class ApiMethods:
                                                 client_secrets_file, 
                                                 scopes,
                                                 state=state)
-            flow.redirect_uri = 'http://localhost:8001/get_token/'
+            flow.redirect_uri = redirect_uri
 
             # user_info = json.load(open(client_secrets_file))['web']
             # token_uri = user_info['token_uri']
@@ -59,7 +60,7 @@ class ApiMethods:
     def get_flow(request):
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
                                                     client_secrets_file, scopes)
-        flow.redirect_uri = 'https://youtube-analytics.herokuapp.com/get_token/'
+        flow.redirect_uri = redirect_uri
 
         authorization_url, state = flow.authorization_url(
             access_type='offline', include_granted_scopes='true')
