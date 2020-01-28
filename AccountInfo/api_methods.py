@@ -59,7 +59,7 @@ class ApiMethods:
     def get_flow(request):
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
                                                     client_secrets_file, scopes)
-        flow.redirect_uri = 'http://localhost:8001/get_token/'
+        flow.redirect_uri = 'https://https://youtube-analytics.herokuapp.com/get_token/'
 
         authorization_url, state = flow.authorization_url(
             access_type='offline', include_granted_scopes='true')
