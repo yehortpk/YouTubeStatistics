@@ -19,9 +19,11 @@ class AccountDetail(View):
                                                                       'page_token': next_page_token,
                                                                       })
 
-        authorization_url = ApiMethods.get_flow()[1]                                                    
+        authorization_url = ApiMethods.get_flow(request)                                                 
         return render(request, "AccountInfo/index.html", context={'is_authorized': False, 
                                                                     'authorization_url': authorization_url})
+    def post(self, request):
+        return self.get(request)
 
     @staticmethod
     def log_in(request):
@@ -45,9 +47,10 @@ class AccountDetail(View):
         account.channel = my_channel
         account.save()
 
-        request.session['credentials']['account_id'] = account.account_id 
+        request.session['credentials']['account_id'] = account.account_id
+        print(request.session['credentials']['account_id']) 
         response_data = create_channels_page(request, FIRST_PAGE_TOKEN)
-        return response_data
+        return redirect('index_url')
     
     @staticmethod
     def log_out(request):
@@ -297,14 +300,12 @@ class ChannelsPageDetail():
         return self.get_page()
 
 def create_channels_page(request, page_token):
-    if request.method == 'GET' and request.is_ajax():
-        account_id = request.session['credentials']['account_id']
-        channels_page = ChannelsPageDetail(account_id = account_id, 
-                                                page_token = page_token)
-        new_channels_page = channels_page.create_channels_page()
-        return JsonResponse(data=new_channels_page)
-    else:
-        return HttpResponseForbidden()       
+    account_id = request.session['credentials']['account_id']
+    channels_page = ChannelsPageDetail(account_id = account_id, 
+                                            page_token = page_token)
+    new_channels_page = channels_page.create_channels_page()
+    return JsonResponse(data=new_channels_page)
+    
 
 def update_channels_page(request, page_token):
     if request.method == 'POST' and request.is_ajax():
@@ -340,3 +341,9 @@ def get_terms(request):
 
 def confirm_html(request):
     return render(request, 'AccountInfo/include/google34ecf22213c98a0d.html')
+
+def get_token(request):
+    authorization_response = request.build_absolute_uri()
+    state = request.GET.get('state')
+    ApiMethods.connect(request, authorization_response, state)
+    return AccountDetail.log_in(request)

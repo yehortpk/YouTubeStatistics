@@ -110,27 +110,29 @@ $('.log-out-btn').click(function(e){
 });
 
 $('.log-in-btn').click(function(e){
-    var url = $('.log-in-form').data('url');
-    console.log(url);
-    window.open(url, 'Authorization', "width=200,height=200");            
-    e.preventDefault();
-    $.ajax({
-        type: 'GET',
-        url: '/log_in/',
-        async: true,
-        data: $('.log-in-form').parent().serialize(),
-        success: function(responseData){ 
-            $('.channels-block').empty();
-            $('.log-in-btn').css('display', 'none');
-            $('.log-out-btn').css('display', 'block');
-            $('.channels-block').append(getNewChannelsHTML(responseData['data']));  
-            $('.next-page-token').val(responseData['next_page_token']);                 
-            if(responseData['next_page_token'] != LAST_PAGE_TOKEN){                   
-                $(".next-channels-page-btn").css('display', 'block');
-            }
-            setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
-        }
-    });
+    var url = $('.log-in-btn').data('url');
+    var authWindow = window.open(url, 'Authorization', "width=400,height=400");
+    // $(authWindow).on("beforeunload", function() { 
+    //     e.preventDefault();
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: '/log_in/',
+    //         async: true,
+    //         data: $('.log-in-form').serialize(),
+    //         success: function(responseData){
+    //             authWindow.close(); 
+    //             $('.channels-block').empty();
+    //             $('.log-in-btn').css('display', 'none');
+    //             $('.log-out-btn').css('display', 'block');
+    //             $('.channels-block').append(getNewChannelsHTML(responseData['data']));  
+    //             $('.next-page-token').val(responseData['next_page_token']);                 
+    //             if(responseData['next_page_token'] != LAST_PAGE_TOKEN){                   
+    //                 $(".next-channels-page-btn").css('display', 'block');
+    //             }
+    //             setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
+    //         }
+    //     });
+    // })
 })
 
 $(document).ready(function (){

@@ -1,8 +1,10 @@
+from django.shortcuts import render, redirect, reverse
 from google.oauth2.credentials import Credentials
 import os
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
+import google.oauth2.credentials
 import json
 
 scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
@@ -11,15 +13,27 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 api_service_name = "youtube"
 api_version = "v3"
 client_secrets_file = "static/info.json"
-redirect_uri = 'http%3A%2F%2Flocalhost%3A8080%2F'
 
 class ApiMethods:
     youtube = None
     @staticmethod
-    def connect(request):        
+    def connect(request, authorization_response=None, state=None):   
         if request.session.get('credentials') == None:
-            flow = ApiMethods.get_flow()[0]
-            credentials = flow.run_local_server(host='youtube-analytics.herokuapp.com', open_browser=True)
+            # _, flow = ApiMethods.get_flow(request)
+
+            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+                                                client_secrets_file, 
+                                                scopes,
+                                                state=state)
+            flow.redirect_uri = 'http://localhost:8001/get_token/'
+
+            # user_info = json.load(open(client_secrets_file))['web']
+            # token_uri = user_info['token_uri']
+            # client_id = user_info['client_id']
+            # client_secret = user_info['client_secret']
+
+            access_token = flow.fetch_token(authorization_response=authorization_response)
+            credentials = flow.credentials
             
             request.session['credentials'] = {
                 'token': credentials.token,
@@ -39,16 +53,18 @@ class ApiMethods:
                                       client_id=credentials_dict['client_id'],
                                       client_secret=credentials_dict['client_secret'],
                                       scopes=credentials_dict['scopes'])
-
         ApiMethods.youtube = googleapiclient.discovery.build(api_service_name, api_version, credentials=credentials)
 
     @staticmethod
-    def get_flow():        
-        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file, scopes)
+    def get_flow(request):
+        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+                                                    client_secrets_file, scopes)
+        flow.redirect_uri = 'http://localhost:8001/get_token/'
 
-        authorization_url = flow.authorization_url()[0] + '&redirect_uri=' + redirect_uri
-        return flow, authorization_url
+        authorization_url, state = flow.authorization_url(
+            access_type='offline', include_granted_scopes='true')
+
+        return authorization_url
 
     @staticmethod
     def get_my_channel_info():
