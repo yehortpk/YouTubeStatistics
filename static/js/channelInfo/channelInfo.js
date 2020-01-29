@@ -19,9 +19,9 @@ function getNewVideosHTML(data){
                                     `<div class="comments-count-block">`+
                                         `Комментариев: ${video.comments_count}`+
                                     `</div>`+
-                                    `<div class="published-at-block">`
-                                    `Дата выхода: ${video.published_at}`
-                                  `</div>`
+                                    `<div class="published-at-block">`+
+                                    `Дата выхода: ${video.published_at}`+
+                                  `</div>`+
                                 `</div>`+
                                 `<h5 class="card-title">`+
                                     `<a href="https://www.youtube.com/watch?v=${video_id}" target="_blank">`+
