@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, reverse
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.views.generic import View
 from google.oauth2 import service_account
 from .models import *

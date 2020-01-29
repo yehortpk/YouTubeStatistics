@@ -6,12 +6,9 @@
 {% endblock title %}
 
 {% block content %}    
-    <!-- <form method="POST" class="log-in-form" >
-        {% csrf_token %} 
-    </form> -->
-    <button class="btn btn-primary log-in-btn" {% if is_authorized %} style='display:none;' {% endif %} data-url={{authorization_url}}>
+    <button class="btn btn-primary log-in-btn" onClick='location.href="{{authorization_url}}"' {% if is_authorized %} style='display:none;' {% endif %}>
         Войти
-    </button>
+    </button>     
     <form method="POST" class="log-out-form">
         {% csrf_token %}
         <button class="btn btn-primary log-out-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
@@ -29,7 +26,9 @@
     <form method="POST" class="row next-channels-page-form">
         {% csrf_token %}
         <input type="hidden" name="next-page-token" value="{{page_token}}" class='next-page-token'>
-        <button class="btn btn-primary next-channels-page-btn">Загрузить еще</button>
+        <button class="btn btn-primary next-channels-page-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
+            Загрузить еще
+        </button>
     </form>
     <script src="{% static 'js/accountInfo/accountInfo.js'%}"></script>    
 {% endblock content %}

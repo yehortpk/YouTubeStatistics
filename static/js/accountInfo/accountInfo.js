@@ -2,7 +2,6 @@ const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
 const LAST_PAGE_TOKEN = 'Last'
-var authWindow; 
 
 function getNewChannelsHTML(data){
     var newChannelsHTML = '';
@@ -107,43 +106,16 @@ $('.log-out-btn').click(function(e){
             $('.log-out-btn').css('display', 'none');                
             $(".next-channels-page-btn").css('display', 'none');
             setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
-            window.close();
         }
     });
 });
 
-$('.log-in-btn').click(function(e){
-    var url = $('.log-in-btn').data('url');
-    authWindow = window.open(url, 'Authorization', "width=400,height=400");
-})
-
 $(document).ready(function (){
     if($('.log-in-btn').css('display') == 'none'){
         setPagesLifeCycle();
-    }
-    if($('.next-page-token').val() != LAST_PAGE_TOKEN)
-        $(".next-channels-page-btn").css('display', 'block');
-        
+        if($('.next-page-token').val() != LAST_PAGE_TOKEN){
+            console.log(1);
+            $(".next-channels-page-btn").css('display', 'block');
+        }  
+    }              
 });
-
-// $(authWindow).on("beforeunload", function() { 
-//     e.preventDefault();
-//     $.ajax({
-//         type: 'POST',
-//         url: '/log_in/',
-//         async: true,
-//         data: $('.log-in-form').serialize(),
-//         success: function(responseData){
-//             authWindow.close(); 
-//             $('.channels-block').empty();
-//             $('.log-in-btn').css('display', 'none');
-//             $('.log-out-btn').css('display', 'block');
-//             $('.channels-block').append(getNewChannelsHTML(responseData['data']));  
-//             $('.next-page-token').val(responseData['next_page_token']);                 
-//             if(responseData['next_page_token'] != LAST_PAGE_TOKEN){                   
-//                 $(".next-channels-page-btn").css('display', 'block');
-//             }
-//             setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
-//         }
-//     });
-// })
