@@ -8,16 +8,20 @@ function getNewVideosHTML(data){
     var newVideosHTML = "";
     for(var video_id in data){
         var video = data[video_id];
+        video.published_at = video.published_at.slice(0, 42);
         newVideosHTML += `<div class="card video-card ml-5 mt-5" style="width: 18rem;" data-video-id=${video_id} page-token=${video.page_token}>`+
                             `<img src="${video.photo}" class="card-img-top" alt="video-img">`+
                             `<div class="card-body">`+
                                 `<div class="detail-info-block">`+
                                     `<div class="views-count-block">`+
-                                    `Просмотров: ${video.views_count}`+
+                                        `Просмотров: ${video.views_count}`+
                                     `</div>`+
                                     `<div class="comments-count-block">`+
-                                    `Комментариев: ${video.comments_count}`+
+                                        `Комментариев: ${video.comments_count}`+
                                     `</div>`+
+                                    `<div class="published-at-block">`
+                                    `Дата выхода: ${video.published_at}`
+                                  `</div>`
                                 `</div>`+
                                 `<h5 class="card-title">`+
                                     `<a href="https://www.youtube.com/watch?v=${video_id}" target="_blank">`+

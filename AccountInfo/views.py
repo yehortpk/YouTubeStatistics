@@ -15,12 +15,11 @@ class AccountDetail(View):
             ApiMethods.connect(request)
             my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
             next_page_token = my_account.pages_list.last().next_page_token
-            print(my_account.subscriptions.all())
-            return render(request, "AccountInfo/index.html", context={'channels': my_account.subscriptions.all().order_by(
-                                                                                                'page'),
-                                                                      'is_authorized': True,
-                                                                      'page_token': next_page_token,
-                                                                      })
+            return render(request, "AccountInfo/index.html", context={
+                        'channels': my_account.subscriptions.all().order_by('page', 'created_at'),
+                        'is_authorized': True,
+                        'page_token': next_page_token,
+                        })
 
         authorization_url = ApiMethods.get_flow(request)                                                 
         return render(request, "AccountInfo/index.html", context={'is_authorized': False, 
@@ -71,18 +70,22 @@ class ChannelDetail(View):
         channel.views_count = channel_detail['views_count']
         channel.subscribers_count = channel_detail['subscriber_count']
         channel.banner_photo = channel_detail['banner_url']
+        channel.published_at = channel_detail['published_at']
 
         next_page_token = ''
         if channel.pages_list.count() != 0:            
             next_page_token = channel.pages_list.all().last().next_page_token  
-        return render(request, "AccountInfo/channelInfo.html", context={'channel': channel, 'page_token': next_page_token})
+        return render(request, "AccountInfo/channelInfo.html", context={'channel': channel,
+                                                             'page_token': next_page_token,
+                                                             'videos_list': channel.videos_list.all().order_by('-published_at')})
 
     
     def get_channel_detail(self, request, channel_id):
         response = ApiMethods.get_channel_detail(channel_id)['items'][0]
         channel_detail = {'views_count': response['statistics']['viewCount'],
                           'subscriber_count': response['statistics']['subscriberCount'],
-                          'banner_url': response['brandingSettings']['image']['bannerImageUrl']
+                          'banner_url': response['brandingSettings']['image']['bannerImageUrl'],
+                          'published_at': response['snippet']['publishedAt'][:10],
                          }
         return channel_detail
 
@@ -138,7 +141,7 @@ class VideosPageDetail():
         for video in response_info['items']:
             video_info = {}
             video_info['video_id'] = video['snippet']['resourceId']['videoId']
-            video_info['published_at'] = video['snippet']['publishedAt']
+            video_info['published_at'] = video['snippet']['publishedAt'][:10]
             video_info['title'] = video['snippet']['title']
             video_info['path_to_photo'] = video['snippet']['thumbnails']['medium']['url']
 
@@ -169,6 +172,7 @@ class VideosPageDetail():
                                                     'average_dislikes': video.average_dislikes,
                                                     'views_count': video.views_count,
                                                     'comments_count': video.comments_count,
+                                                    'published_at': video.published_at,
                                                     'page_token': self.current_page_token,
                                                     }
         current_page['next_page_token'] = self.next_page_token        
@@ -199,6 +203,7 @@ class VideosPageDetail():
         new_video.comments_count = video['comments_count']
         new_video.average_likes = video['average_likes_count']
         new_video.average_dislikes = video['average_dislikes_count']
+        new_video.published_at = video['published_at']
         new_video.page = page
         new_video.channel = channel
         new_video.save()
@@ -229,14 +234,13 @@ class ChannelsPageDetail():
                                             )       
         for channel in channels_page:  
             new_channel = Channel(acc=account,
-                                    title=channel['title'],
-                                    channel_id=channel['channel_id'], 
-                                    photo=channel['path_to_photo'], 
-                                    channel_url=channel['channel_url'], 
-                                    videos_count=channel['videos_count'],
-                                    description=channel['description'],
-                                    published_at=channel['published_at'],
-                                    page=page
+                                title=channel['title'],
+                                channel_id=channel['channel_id'], 
+                                photo=channel['path_to_photo'], 
+                                channel_url=channel['channel_url'], 
+                                videos_count=channel['videos_count'],
+                                description=channel['description'],
+                                page=page
                                  )
             new_channel.save()              
             page.save()
@@ -266,8 +270,7 @@ class ChannelsPageDetail():
             channel_page['title'] = channel['snippet']['title']   
             channel_page['channel_url'] = 'https://www.youtube.com/channel/' + channel_id        
             channel_page['path_to_photo'] = channel['snippet']['thumbnails']['high']['url']
-            channel_page['description'] = channel['snippet']['description']
-            channel_page['published_at'] = channel['snippet']['publishedAt'][:10]           
+            channel_page['description'] = channel['snippet']['description']  
             
             channels_page.append(channel_page)            
 
@@ -282,7 +285,7 @@ class ChannelsPageDetail():
                                                         'videos_count': channel.videos_count,
                                                         'channel_url': channel.channel_url,
                                                         'page_token': self.current_page_token        
-                                                    }
+                                                        }
         current_page['next_page_token'] = self.next_page_token
         return current_page
 

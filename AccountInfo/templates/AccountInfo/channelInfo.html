@@ -27,14 +27,15 @@
                 <div class="channel-videos-count">
                     Видео: {{channel.videos_count}}
                 </div>
+                <div class="channel-published-at">
+                    Дата создания канала: {{channel.published_at}}
+                </div>
             </div>            
         </div>         
     </div>
     <div class="row videos-block ml-3">
-        {% for page in channel.pages_list.all %}              
-                {% for video in page.videos_list.all%}
-                    {% include 'AccountInfo/include/video-card.html' %}   
-                {% endfor %}  
+        {% for video in videos_list %}              
+            {% include 'AccountInfo/include/video-card.html' %}   
         {% endfor %} 
     </div>
     <form method="POST" class="row next-videos-page-form">

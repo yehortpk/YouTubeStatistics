@@ -18,7 +18,8 @@ class Channel(models.Model):
     average_likes = models.PositiveIntegerField(null=True)
     average_dislikes = models.PositiveIntegerField(null=True)
     description = models.TextField()
-    published_at = models.DateField()
+    published_at = models.DateField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     views_count = models.IntegerField(null=True)
     subscribers_count = models.IntegerField(null=True)
     banner_photo = models.CharField(max_length=255, null=True)
@@ -52,6 +53,8 @@ class Video(models.Model):
     comments_count = models.PositiveIntegerField(default=0)
     average_likes = models.PositiveIntegerField(default=0)
     average_dislikes = models.PositiveIntegerField(default=0)
+    published_at = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     channel = models.ForeignKey('Channel', on_delete=models.CASCADE, related_name='videos_list', null=True)
     page = models.ForeignKey('VideoPage', on_delete=models.CASCADE, related_name='videos_list', null=True)
