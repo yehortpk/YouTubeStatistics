@@ -61,7 +61,6 @@ class AccountDetail(View):
         request.session.pop('credentials')
         return JsonResponse(data={})
 
-
 class ChannelDetail(View):
     def get(self, request, channel_id):
         ApiMethods.connect(request)
@@ -71,6 +70,7 @@ class ChannelDetail(View):
         channel.subscribers_count = channel_detail['subscriber_count']
         channel.banner_photo = channel_detail['banner_url']
         channel.published_at = channel_detail['published_at']
+        channel.save()
 
         next_page_token = ''
         if channel.pages_list.count() != 0:            
@@ -88,7 +88,6 @@ class ChannelDetail(View):
                           'published_at': response['snippet']['publishedAt'][:10],
                          }
         return channel_detail
-
 
 class VideosPageDetail():
     channel_id = ''
@@ -166,12 +165,12 @@ class VideosPageDetail():
         for video in self.videos_list.all():
             current_page['data'][video.video_id] = {'photo': video.photo,
                                                     'title': video.title,
-                                                    'likes_count': video.likes_count,
-                                                    'dislikes_count': video.dislikes_count,
-                                                    'average_likes': video.average_likes,
-                                                    'average_dislikes': video.average_dislikes,
-                                                    'views_count': video.views_count,
-                                                    'comments_count': video.comments_count,
+                                                    'likes_count': reduce_number(video.likes_count),
+                                                    'dislikes_count': reduce_number(video.dislikes_count),
+                                                    'average_likes': reduce_number(video.average_likes),
+                                                    'average_dislikes': reduce_number(video.average_dislikes),
+                                                    'views_count': reduce_number(video.views_count),
+                                                    'comments_count': reduce_number(video.comments_count),
                                                     'published_at': video.published_at,
                                                     'page_token': self.current_page_token,
                                                     }
@@ -300,7 +299,6 @@ class ChannelsPageDetail():
             channel.channel_url=updated_channel['channel_url']
             channel.videos_count=updated_channel['videos_count']
             channel.description=updated_channel['description']
-            channel.published_at=updated_channel['published_at']
             channel_counter += 1
         
         return self.get_page()
@@ -311,8 +309,7 @@ def create_channels_page(request, page_token):
                                             page_token = page_token)
     new_channels_page = channels_page.create_channels_page()
     return JsonResponse(data=new_channels_page)
-    
-
+ 
 def update_channels_page(request, page_token):
     if request.method == 'POST' and request.is_ajax():
         account_id = request.session['credentials']['account_id']

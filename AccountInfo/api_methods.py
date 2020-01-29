@@ -7,7 +7,10 @@ import googleapiclient.errors
 import google.oauth2.credentials
 import json
 
-scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
+scopes = ['https://www.googleapis.com/auth/youtube.readonly',
+           'https://www.googleapis.com/auth/userinfo.email',
+           'openid',
+           'https://www.googleapis.com/auth/userinfo.profile']
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 api_service_name = "youtube"
@@ -24,7 +27,7 @@ class ApiMethods:
         if request.session.get('credentials') == None:
             flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
                                                 client_secrets_file, 
-                                                scopes,
+                                                scopes=scopes,
                                                 state=state)
             flow.redirect_uri = redirect_uri            
             access_token = flow.fetch_token(authorization_response=authorization_response)
@@ -53,11 +56,12 @@ class ApiMethods:
     @staticmethod
     def get_flow(request):
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-                                                    client_secrets_file, scopes)
+                                                    client_secrets_file,
+                                                    scopes=scopes)
         flow.redirect_uri = redirect_uri
 
         authorization_url, state = flow.authorization_url(
-            access_type='offline', include_granted_scopes='true')
+            access_type='offline', include_granted_scopes='true', scopes=scopes)
 
         return authorization_url
 
