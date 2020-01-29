@@ -114,7 +114,6 @@ $(document).ready(function (){
     if($('.log-in-btn').css('display') == 'none'){
         setPagesLifeCycle();
         if($('.next-page-token').val() != LAST_PAGE_TOKEN){
-            console.log(1);
             $(".next-channels-page-btn").css('display', 'block');
         }  
     }              

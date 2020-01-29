@@ -16,7 +16,8 @@ class AccountDetail(View):
             my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
             next_page_token = my_account.pages_list.last().next_page_token
             print(my_account.subscriptions.all())
-            return render(request, "AccountInfo/index.html", context={'channels': my_account.subscriptions.all(),
+            return render(request, "AccountInfo/index.html", context={'channels': my_account.subscriptions.all().order_by(
+                                                                                                'page'),
                                                                       'is_authorized': True,
                                                                       'page_token': next_page_token,
                                                                       })
