@@ -6,10 +6,10 @@
 {% endblock title %}
 
 {% block content %}    
-    <button class="btn btn-primary log-in-btn" onClick='location.href="{{authorization_url}}"' {% if is_authorized %} style='display:none;' {% endif %}>
+    <button class="btn btn-primary log-in-btn ml-3" onClick='location.href="{{authorization_url}}"' {% if is_authorized %} style='display:none;' {% endif %}>
         Войти
     </button>     
-    <form method="POST" class="log-out-form">
+    <form method="POST" class="log-out-form ml-3">
         {% csrf_token %}
         <button class="btn btn-primary log-out-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
             Выйти
@@ -18,17 +18,18 @@
     <form method="POST" class="update-channels-block">
         {% csrf_token %}
     </form>
-    <div class="row channels-block ml-3">
+    <div class="row channels-block mt-3 ml-3">
         {% for channel in channels %}            
             {% include 'AccountInfo/include/channel-card.html' %}  
         {% endfor %}
     </div>   
-    <form method="POST" class="row next-channels-page-form">
+    <form method="POST" class="row next-channels-page-form ml-2">
         {% csrf_token %}
         <input type="hidden" name="next-page-token" value="{{page_token}}" class='next-page-token'>
         <button class="btn btn-primary next-channels-page-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
             Загрузить еще
         </button>
     </form>
-    <script src="{% static 'js/accountInfo/accountInfo.js'%}"></script>    
+    <script type="module" src="{% static 'js/accountInfo/accountInfo.js'%}"></script>
+    <script type="module" src="{% static 'js/include/cards.js'%}"></script>       
 {% endblock content %}

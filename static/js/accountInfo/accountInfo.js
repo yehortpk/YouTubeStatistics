@@ -1,36 +1,8 @@
+import { getNewChannelsHTML } from '/static/js/include/cards.js';
 const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
 const LAST_PAGE_TOKEN = 'Last'
-
-function getNewChannelsHTML(data){
-    var newChannelsHTML = '';
-    for(var channel_id in data){
-        var channel = data[channel_id];
-        channel.title = channel.title.slice(0, 30);
-        newChannelsHTML +=`<div class="channel-card" data-page-token=${channel.page_token}>`+
-                                `<div class="row">`+
-                                    `<div class="channel-card-photo col-4">`+
-                                        `<img src="${channel.photo}" alt='Channel photo'>`+
-                                    `</div>`+
-                                    `<div class="channel-card-body col-8">`+
-                                        `<div class="channel-title row">`+
-                                            `<a href="/channel_id/${channel_id}" target="_blank" title="${channel.title}">`+
-                                                `${channel.title}`+
-                                            `</a>`+
-                                        `</div>`+
-                                        `<div class="channel-info row">`+
-                                            `<span>Видео: ${channel.videos_count}</span>`+
-                                        `</div>`+
-                                        `<div class="channel-url row">`+
-                                            `<a href="${channel.channel_url}">Ссылка на канал</a>`+
-                                        `</div>`+
-                                    `</div>`+
-                                `</div>` +
-                            `</div>`
-    }
-    return newChannelsHTML;
-}
 
 function updateChannelsPage(pageToken){
     $.ajax({

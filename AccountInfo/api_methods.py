@@ -129,4 +129,10 @@ class ApiMethods:
             id=channel_id
         )
         channel_detail = query.execute()
+        if channel_detail['pageInfo']['totalResults'] == 0:
+            query = ApiMethods.youtube.channels().list(
+            part="snippet,statistics,brandingSettings",
+            forUsername=channel_id
+            )
+            channel_detail = query.execute()
         return channel_detail

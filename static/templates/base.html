@@ -18,11 +18,16 @@
         
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark header">
-        <a class="navbar-brand" href="{% url 'index_url' %}">YouTube Statistics</a>
-    </nav>
+    <nav class="navbar navbar-dark bg-dark">
+        <a href="{% url 'index_url' %}" class="navbar-brand">YouTube Statistics</a>
+        <form class="form-inline" method="POST" action="{% url 'find_channel_url' %}">
+            {% csrf_token %}
+          <input class="form-control mr-sm-2" type="search" placeholder="Ссылка на канал" aria-label="Search" name='url'>
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+      </nav>
     <main>
-        <div class="container-fluid">
+        <div class="container-fluid mt-3">
             {% block content %}
             {% endblock content %}
         </div>       

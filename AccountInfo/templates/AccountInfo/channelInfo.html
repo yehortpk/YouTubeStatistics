@@ -6,8 +6,8 @@
 {% endblock title %}
 
 {% block content %}    
-    <div class="channel-detail container">
-        <div class="row banner">
+    <div class="channel-detail">
+        <div class="banner">
             <img src="{{channel.banner_photo}}" alt="banner">
         </div>
         <div class="channel-info row mt-5">
@@ -38,11 +38,12 @@
             {% include 'AccountInfo/include/video-card.html' %}   
         {% endfor %} 
     </div>
-    <form method="POST" class="row next-videos-page-form">
+    <form method="POST" class="row next-videos-page-form ml-2">
         {% csrf_token %}
         <input type="hidden" name="next-videos-page-token" value="{{page_token}}" class='next-page-token'>
         <button class="btn btn-primary next-videos-page-btn">Загрузить еще</button>                    
     </form> 
-    <script src="{% static 'js/channelInfo/channelInfo.js'%}"></script>     
+    <script type="module" src="{% static 'js/channelInfo/channelInfo.js'%}"></script>     
+    <script type="module" src="{% static 'js/include/cards.js'%}"></script>     
         
 {% endblock content %}

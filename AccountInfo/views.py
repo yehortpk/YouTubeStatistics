@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.views.generic import View
 from google.oauth2 import service_account
@@ -14,11 +14,16 @@ class AccountDetail(View):
         if(request.session.get('credentials') != None and request.session['credentials'].get('account_id') != None):
             ApiMethods.connect(request)
             my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
+            if  request.session.get('channel_to_delete')!= None:
+                my_account.subscriptions.get(channel_id=request.session['channel_to_delete']).delete()
+                request.session.pop('channel_to_delete')
             next_page_token = my_account.pages_list.last().next_page_token
+            authorization_url = ApiMethods.get_flow(request)
             return render(request, "AccountInfo/index.html", context={
                         'channels': my_account.subscriptions.all().order_by('page', 'created_at'),
                         'is_authorized': True,
                         'page_token': next_page_token,
+                        'authorization_url': authorization_url
                         })
 
         authorization_url = ApiMethods.get_flow(request)                                                 
@@ -64,16 +69,18 @@ class AccountDetail(View):
 class ChannelDetail(View):
     def get(self, request, channel_id):
         ApiMethods.connect(request)
-        channel = Channel.objects.get(channel_id=channel_id)
+
+        my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
+        channel = get_object_or_404(my_account.subscriptions, channel_id=channel_id)
         channel_detail = self.get_channel_detail(request, 'UC' + channel_id[2:])
         channel.views_count = channel_detail['views_count']
         channel.subscribers_count = channel_detail['subscriber_count']
-        channel.banner_photo = channel_detail['banner_url']
+        channel.banner_photo = channel_detail['banner_url'].replace('1060', '1920')
         channel.published_at = channel_detail['published_at']
         channel.save()
 
         next_page_token = ''
-        if channel.pages_list.count() != 0:            
+        if channel.pages_list.count() != 0:
             next_page_token = channel.pages_list.all().last().next_page_token  
         return render(request, "AccountInfo/channelInfo.html", context={'channel': channel,
                                                              'page_token': next_page_token,
@@ -153,8 +160,8 @@ class VideosPageDetail():
             video_info['comments_count'] = int(detail_info['items'][0]['statistics']['commentCount']) 
             video_info['likes_count'] = likes_count    
             video_info['dislikes_count'] = dislikes_count    
-            video_info['average_likes_count'] = int(likes_count/(likes_count + dislikes_count)*100)
-            video_info['average_dislikes_count'] = int(dislikes_count/(likes_count + dislikes_count)*100)
+            video_info['average_likes_count'] = int(likes_count/(likes_count + dislikes_count)*100)*2
+            video_info['average_dislikes_count'] = int(dislikes_count/(likes_count + dislikes_count)*100)*2
         
             videos_page.append(video_info)        
         return next_page_token, videos_page 
@@ -187,8 +194,8 @@ class VideosPageDetail():
             video.dislikes_count = dislikes_count = int(detail_info['dislikeCount'])
             video.views_count = views_count = int(detail_info['viewCount'])
             video.comments_count = comments_count = int(detail_info['commentCount'])
-            video.average_likes = average_likes = int(likes_count/(likes_count + dislikes_count)*100)
-            video.average_dislikes = average_dislikes = int(dislikes_count/(likes_count + dislikes_count)*100)
+            video.average_likes = average_likes = int(likes_count/(likes_count + dislikes_count)*100)*2
+            video.average_dislikes = average_dislikes = int(dislikes_count/(likes_count + dislikes_count)*100)*2
             video.save()
 
     def create_video(self, channel, page, video):
@@ -350,3 +357,32 @@ def get_token(request):
     state = request.GET.get('state')
     ApiMethods.connect(request, authorization_response, state)
     return AccountDetail.log_in(request)
+
+def find_channel(request):
+    url = request.POST.get('url')
+    channel_id = url.rsplit('/', 1)[-1]
+    channel_info = ApiMethods.get_channel_detail(channel_id)
+    if channel_info['pageInfo']['totalResults'] == 0:
+        return HttpResponse('Канал не найден')
+    channel_info = channel_info['items'][0]
+    channel_id = channel_info['id']
+    channel_playlist_id = 'UU' + channel_id[2:]
+    account = Account.objects.get(account_id = request.session['credentials']['account_id'])
+    try:
+        account.subscriptions.get(channel_id=channel_playlist_id)
+    except:
+        channel = Channel(
+                        acc=account, 
+                        channel_id =  channel_playlist_id,
+                        videos_count = channel_info['statistics']['videoCount'],                
+                        title = channel_info['snippet']['title'],   
+                        channel_url = 'https://www.youtube.com/channel/' + channel_id ,       
+                        photo = channel_info['snippet']['thumbnails']['high']['url'],
+                        description = channel_info['snippet']['description']
+                        )
+        channel.save()
+    channel_id =  'UU' + channel_id[2:]
+    request.session['channel_to_delete'] = channel_id
+    redirect_uri = reverse('channel_info_url', args=[channel_playlist_id])
+    return redirect(redirect_uri)
+    

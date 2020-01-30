@@ -1,6 +1,15 @@
-<div class="card video-card ml-5 mt-5" style="width: 18rem;" data-video-id={{video.video_id}} data-page-token={{video.page.current_page_token}}>
+<div class="card video-card mr-5 mt-5" style="width: 18rem;" data-video-id={{video.video_id}} data-page-token={{video.page.current_page_token}}>
     <img src="{{video.photo}}" class="card-img-top" alt="video-img">
     <div class="card-body">
+      <div class="card-title-block">
+      <h5>
+        <a href="https://www.youtube.com/watch?v={{video.video_id}}" target="_blank" title="{{video.title}}">
+          <div card-title>
+            {{video.title|truncatechars:21}}
+          </div>
+        </a>
+      </h5>
+    </div>
       <div class="detail-info-block">
         <div class="views-count-block">
           Просмотров: {{video.views_count}}
@@ -12,12 +21,6 @@
           Дата выхода: {{video.published_at}}
         </div>
       </div>
-      <h5 class="card-title">
-        <a href="https://www.youtube.com/watch?v={{video.video_id}}" target="_blank">
-          {{video.title|truncatechars:42}}
-        </a>
-      </h5>
-
       <div class="rating-block row ml-3">
           <div class="likes-block">
             <p>{{video.likes_count}}</p>

@@ -1,48 +1,9 @@
-const INTERVAL = 60*1000;
-const DELAY = 47*1000;
+import { getNewVideosHTML } from '/static/js/include/cards.js';
+const INTERVAL = 20*1000;
+const DELAY = 17*1000;
 const FIRST_PAGE_TOKEN = 'First'
 const LAST_PAGE_TOKEN = 'Last'
 var channel_id = window.location.pathname.split('/channel_id/')[1];   
-
-function getNewVideosHTML(data){
-    var newVideosHTML = "";
-    for(var video_id in data){
-        var video = data[video_id];
-        video.published_at = video.published_at.slice(0, 42);
-        newVideosHTML += `<div class="card video-card ml-5 mt-5" style="width: 18rem;" data-video-id=${video_id} page-token=${video.page_token}>`+
-                            `<img src="${video.photo}" class="card-img-top" alt="video-img">`+
-                            `<div class="card-body">`+
-                                `<div class="detail-info-block">`+
-                                    `<div class="views-count-block">`+
-                                        `Просмотров: ${video.views_count}`+
-                                    `</div>`+
-                                    `<div class="comments-count-block">`+
-                                        `Комментариев: ${video.comments_count}`+
-                                    `</div>`+
-                                    `<div class="published-at-block">`+
-                                    `Дата выхода: ${video.published_at}`+
-                                  `</div>`+
-                                `</div>`+
-                                `<h5 class="card-title">`+
-                                    `<a href="https://www.youtube.com/watch?v=${video_id}" target="_blank">`+
-                                        `${video.title}`+
-                                    `</a>`+
-                                `</h5>`+
-                                `<div class="rating-block row ml-3">`+
-                                    `<div class="likes-block">`+
-                                        `<p>${video.likes_count}</p>`+
-                                        `<div class="likes-count-block" style="width:${video.average_likes}px"></div>`+
-                                        `</div>`+
-                                    `<div class="dislikes-block">`+
-                                        `<p>${video.dislikes_count}</p>`+
-                                        `<div class="dislikes-count-block" style="width:${video.average_dislikes}px"></div>`+
-                                    `</div>`+
-                                `</div>`+
-                            `</div>`+
-                        `</div>`;
-        }
-    return newVideosHTML
-}
 
 function createFirstVideosPage(){
     $('next-page-token').val(FIRST_PAGE_TOKEN)
@@ -87,7 +48,6 @@ function updateVideosPage(channelId, pageToken){
         },
         dataType: 'json',
     });
-    
 }
 
 function setPageUpdTimeout(channel_id, pageToken, interval){
@@ -102,11 +62,10 @@ function setPagesLifeCycle(channel_id){
         if(tokens_list.indexOf(token) == -1)
             tokens_list.push(token);
     })
-    console.log(tokens_list);
     tokens_list.forEach(function(token){
         setPageUpdTimeout(channel_id, token, INTERVAL+delay);
         delay+=DELAY;
-    })   
+    })
 }
 
 $(".next-videos-page-btn").click(function(e) {
@@ -130,13 +89,13 @@ $(".next-videos-page-btn").click(function(e) {
         },
         dataType: 'json',
     });               
-})   
+})
 
-$(document).ready(function () {
+$(document).ready(function (){
     if($('.next-page-token').val() == ''){
         createFirstVideosPage();
     }
     else
         $(".next-videos-page-btn").css('display', 'block');
-    setPagesLifeCycle(channel_id, INTERVAL);  
+    setPagesLifeCycle(channel_id, INTERVAL);
 })
