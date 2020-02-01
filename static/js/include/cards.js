@@ -39,10 +39,12 @@ export function getNewVideosHTML(data){
         newVideosHTML += `<div class="card video-card mr-5 mt-5" style="width: 18rem;" data-video-id=${video_id} page-token=${video.page_token}>`+
                             `<img src="${video.photo}" class="card-img-top" alt="video-img">`+
                             `<div class="card-body">`+
-                                `<h5 class="card-title">`+
-                                    `<a href="https://www.youtube.com/watch?v=${video_id}" target="_blank" title="${video.title}">`+
-                                        `${cut_title}`+
-                                    `</a>`+
+                                `<h5 class="card-title-block">`+
+                                    `<div class="card-title">`+
+                                        `<a href="https://www.youtube.com/watch?v=${video_id}" target="_blank" title="${video.title}">`+
+                                            `${cut_title}`+
+                                        `</a>`+
+                                    `</div>`+
                                 `</h5>`+
                                 `<div class="detail-info-block">`+                                
                                     `<div class="views-count-block">`+

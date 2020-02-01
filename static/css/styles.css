@@ -50,10 +50,11 @@ body{
 .banner{
     width:102%;
     margin-left: -15px;
+    max-height: 320px;
 }
 .banner img{
     width:100%;
 }
 .card-title-block{
-    width:20px;
+    height:20px;
 }

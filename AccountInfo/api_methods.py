@@ -17,8 +17,8 @@ api_service_name = "youtube"
 api_version = "v3"
 client_secrets_file = "static/info.json"
 
-#redirect_uri = 'http://localhost:8001/get_token/'
-redirect_uri = 'https://youtube-analytics.herokuapp.com/get_token/'
+redirect_uri = 'http://localhost:8001/get_token/'
+#redirect_uri = 'https://youtube-analytics.herokuapp.com/get_token/'
 
 class ApiMethods:
     youtube = None
@@ -76,6 +76,7 @@ class ApiMethods:
 
     @staticmethod
     def get_videos_page(channel_id, max_results, page_token=None):
+        print(1)
         if page_token == None:            
             query = ApiMethods.youtube.playlistItems().list(
                 part="snippet",

@@ -1,6 +1,7 @@
 import { getNewVideosHTML } from '/static/js/include/cards.js';
-const INTERVAL = 20*1000;
-const DELAY = 17*1000;
+const TOTAL_UPD_INTERVAL = 30*1000;
+const INTERVAL = 60*1000;
+const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
 const LAST_PAGE_TOKEN = 'Last'
 var channel_id = window.location.pathname.split('/channel_id/')[1];   
@@ -68,6 +69,29 @@ function setPagesLifeCycle(channel_id){
     })
 }
 
+function totalVideosUpdate(data){
+    var data = $('.update-videos-list-form').serialize();
+    $.ajax({
+        type: 'POST',
+        url: `/update_videos_list/${channel_id}/`,
+        async: true,
+        data: data,
+        success: function(responseData) {
+            if(Object.keys(responseData['data']).length != 0){
+                $('.videos-block').empty();
+                var newVideosHTML = getNewVideosHTML(responseData['data']);
+                $('.videos-block').append(newVideosHTML);
+                $(".next-page-token").val(responseData['next_page_token']);             
+                clearAllTymeouts();
+                setPagesLifeCycle();
+            }
+            if(responseData['next_page_token'] == LAST_PAGE_TOKEN)
+                    $(".next-videos-page-btn").css('display', 'none');
+            setTimeout(totalVideosUpdate, TOTAL_UPD_INTERVAL);
+        },
+        dataType: 'json', 
+    });
+}
 $(".next-videos-page-btn").click(function(e) {
     e.preventDefault();                                
     var data = $(this).parent().serialize();
@@ -83,6 +107,7 @@ $(".next-videos-page-btn").click(function(e) {
                 $(".next-videos-page-btn").css('display', 'none');
             else
                 nextPageTokenBlock.val(responseData['next_page_token']);
+            console.log(responseData['data'].length);
             var newVideosHTML = getNewVideosHTML(responseData['data']);
             $('.videos-block').append(newVideosHTML);
             setPageUpdTimeout(channel_id, nextPageTokenValue, INTERVAL);
@@ -91,11 +116,26 @@ $(".next-videos-page-btn").click(function(e) {
     });               
 })
 
+$('.update-videos-list-form').submit(function(e){
+    e.preventDefault();                                
+    setTimeout(totalVideosUpdate, TOTAL_UPD_INTERVAL);
+})
+
+function clearAllTymeouts(){
+    var id = window.setTimeout(function() {}, 0);
+
+    while (id--) {
+        window.clearTimeout(id);
+    }
+}
+
 $(document).ready(function (){
     if($('.next-page-token').val() == ''){
         createFirstVideosPage();
     }
     else
         $(".next-videos-page-btn").css('display', 'block');
+    if ($(".next-page-token").val() == LAST_PAGE_TOKEN)
+        $(".next-videos-page-btn").css('display', 'none');
     setPagesLifeCycle(channel_id, INTERVAL);
 })

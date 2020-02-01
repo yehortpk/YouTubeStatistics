@@ -4,6 +4,7 @@ from django.views.generic import View
 from google.oauth2 import service_account
 from .models import *
 from .api_methods import ApiMethods
+import math
 
 FIRST_PAGE_TOKEN = 'First'
 VIDEO_PAGE_MAX_RESULTS = 10
@@ -26,7 +27,7 @@ class AccountDetail(View):
                         'authorization_url': authorization_url
                         })
 
-        authorization_url = ApiMethods.get_flow(request)                                                 
+        authorization_url = ApiMethods.get_flow(request)
         return render(request, "AccountInfo/index.html", context={'is_authorized': False, 
                                                                     'authorization_url': authorization_url})
     def post(self, request):
@@ -113,7 +114,7 @@ class VideosPageDetail():
             self.videos_list = []
 
     def create_videos_page(self):        
-        channel = Channel.objects.get(channel_id=self.channel_id)        
+        channel = Channel.objects.get(channel_id=self.channel_id)
         self.next_page_token, videos_page = self.get_current_page_videos(VIDEO_PAGE_MAX_RESULTS)
 
         page = VideoPage.objects.create(current_page_token=self.current_page_token,
@@ -156,14 +157,18 @@ class VideosPageDetail():
             likes_count = int(detail_info['items'][0]['statistics']['likeCount'])
             dislikes_count = int(detail_info['items'][0]['statistics']['dislikeCount'])
 
-            video_info['views_count'] = int(detail_info['items'][0]['statistics']['viewCount'])            
+            video_info['views_count'] = int(detail_info['items'][0]['statistics']['viewCount'])
             video_info['comments_count'] = int(detail_info['items'][0]['statistics']['commentCount']) 
             video_info['likes_count'] = likes_count    
-            video_info['dislikes_count'] = dislikes_count    
-            video_info['average_likes_count'] = int(likes_count/(likes_count + dislikes_count)*100)*2
-            video_info['average_dislikes_count'] = int(dislikes_count/(likes_count + dislikes_count)*100)*2
+            video_info['dislikes_count'] = dislikes_count
+            if likes_count+dislikes_count == 0:
+                video_info['average_likes_count'] = 0
+                video_info['average_dislikes_count'] = 0
+            else:
+                video_info['average_likes_count'] = int(likes_count/(likes_count + dislikes_count)*100)*2
+                video_info['average_dislikes_count'] = int(dislikes_count/(likes_count + dislikes_count)*100)*2
         
-            videos_page.append(video_info)        
+            videos_page.append(video_info)
         return next_page_token, videos_page 
 
     def get_current_page(self):
@@ -181,7 +186,7 @@ class VideosPageDetail():
                                                     'published_at': video.published_at,
                                                     'page_token': self.current_page_token,
                                                     }
-        current_page['next_page_token'] = self.next_page_token        
+        current_page['next_page_token'] = self.next_page_token
         return current_page
 
     def update_videos_page(self):
@@ -194,8 +199,12 @@ class VideosPageDetail():
             video.dislikes_count = dislikes_count = int(detail_info['dislikeCount'])
             video.views_count = views_count = int(detail_info['viewCount'])
             video.comments_count = comments_count = int(detail_info['commentCount'])
-            video.average_likes = average_likes = int(likes_count/(likes_count + dislikes_count)*100)*2
-            video.average_dislikes = average_dislikes = int(dislikes_count/(likes_count + dislikes_count)*100)*2
+            if likes_count+dislikes_count == 0:
+                video.average_likes_count = 0
+                video.average_dislikes_count = 0
+            else:
+                video.average_likes_count = int(likes_count/(likes_count + dislikes_count)*100)*2
+                video.average_dislikes_count = int(dislikes_count/(likes_count + dislikes_count)*100)*2
             video.save()
 
     def create_video(self, channel, page, video):
@@ -230,14 +239,14 @@ class ChannelsPageDetail():
         except:
             self.channels_list = []
 
-    def create_channels_page(self):        
-        account = Account.objects.get(account_id=self.account_id)        
+    def create_channels_page(self):
+        account = Account.objects.get(account_id=self.account_id)
         self.next_page_token, channels_page = self.get_channels(CHANNEL_PAGE_MAX_RESULTS)
         page = ChannelPage.objects.create(current_page_token=self.current_page_token,
                                             next_page_token=self.next_page_token,
                                             account=account,
                                             size=VIDEO_PAGE_MAX_RESULTS
-                                            )       
+                                            )
         for channel in channels_page:  
             new_channel = Channel(acc=account,
                                 title=channel['title'],
@@ -272,13 +281,13 @@ class ChannelsPageDetail():
             channel_page = {}
             channel_id = channel['snippet']['resourceId']['channelId']
             channel_page['channel_id'] =  'UU' + channel_id[2:]
-            channel_page['videos_count'] = channel['contentDetails']['totalItemCount']                
+            channel_page['videos_count'] = channel['contentDetails']['totalItemCount']
             channel_page['title'] = channel['snippet']['title']   
-            channel_page['channel_url'] = 'https://www.youtube.com/channel/' + channel_id        
+            channel_page['channel_url'] = 'https://www.youtube.com/channel/' + channel_id
             channel_page['path_to_photo'] = channel['snippet']['thumbnails']['high']['url']
             channel_page['description'] = channel['snippet']['description']  
             
-            channels_page.append(channel_page)            
+            channels_page.append(channel_page)
 
         return next_page_token, channels_page
 
@@ -290,7 +299,7 @@ class ChannelsPageDetail():
                                                         'title': channel.title,
                                                         'videos_count': channel.videos_count,
                                                         'channel_url': channel.channel_url,
-                                                        'page_token': self.current_page_token        
+                                                        'page_token': self.current_page_token
                                                         }
         current_page['next_page_token'] = self.next_page_token
         return current_page
@@ -325,7 +334,7 @@ def update_channels_page(request, page_token):
         updated_channels_page = channels_page.update_channels_page()
         return JsonResponse(data=updated_channels_page)
     else:
-        return HttpResponseForbidden()      
+        return HttpResponseForbidden()
 
 def create_videos_page(request, channel_id, page_token):
     if request.method == 'POST' and request.is_ajax():
@@ -374,9 +383,9 @@ def find_channel(request):
         channel = Channel(
                         acc=account, 
                         channel_id =  channel_playlist_id,
-                        videos_count = channel_info['statistics']['videoCount'],                
+                        videos_count = channel_info['statistics']['videoCount'],
                         title = channel_info['snippet']['title'],   
-                        channel_url = 'https://www.youtube.com/channel/' + channel_id ,       
+                        channel_url = 'https://www.youtube.com/channel/' + channel_id ,
                         photo = channel_info['snippet']['thumbnails']['high']['url'],
                         description = channel_info['snippet']['description']
                         )
@@ -385,4 +394,137 @@ def find_channel(request):
     request.session['channel_to_delete'] = channel_id
     redirect_uri = reverse('channel_info_url', args=[channel_playlist_id])
     return redirect(redirect_uri)
+
+def create_new_videos(channel):
+    new_videos_list = []
+    current_page_token = None
+    while(current_page_token!='Last'):
+        videos_page = ApiMethods.get_videos_page(channel_id=channel.channel_id,
+                                                max_results=VIDEO_PAGE_MAX_RESULTS,
+                                                page_token=current_page_token)
+        if current_page_token == None:
+                    current_page_token = 'First'
+        
+        next_page_token = videos_page.get('nextPageToken')
+        if next_page_token == None:
+            next_page_token = 'Last'
+        
+        for video in videos_page['items']:
+            video_id=video['snippet']['resourceId']['videoId']
+            try:
+                current_page = channel.pages_list.get(current_page_token=current_page_token)
+            except:
+                current_page = VideoPage(current_page_token=current_page_token, 
+                                        next_page_token=next_page_token,
+                                        channel=channel)
+                current_page.save()
+            try:
+                current_video = channel.videos_list.get(video_id=video_id)
+                return new_videos_list
+            except:
+                new_video = create_video(video, channel)
+                new_video.page = current_page
+                new_video.save()
+                new_videos_list.append(new_video.title)
+
+        current_page_token = next_page_token
+    return new_videos_list
+
+def update_videos_list(request, channel_id):
+    account = Account.objects.get(account_id=request.session['credentials']['account_id'])
+    channel = account.subscriptions.get(channel_id=channel_id)
+
+    new_videos = create_new_videos(channel)
+    removed_videos = remove_deleted_videos(channel)
+
+    data = {}
+    data['next_page_token'] = channel.pages_list.last().next_page_token
+    data['data'] = {}
     
+    if not len(new_videos) == 0 and len(removed_videos) == 0:    
+        for video in channel.videos_list.all().order_by('-published_at'):
+            data['data'][video.video_id] = {'photo': video.photo,
+                                                    'title': video.title,
+                                                    'likes_count': reduce_number(video.likes_count),
+                                                    'dislikes_count': reduce_number(video.dislikes_count),
+                                                    'average_likes': reduce_number(video.average_likes),
+                                                    'average_dislikes': reduce_number(video.average_dislikes),
+                                                    'views_count': reduce_number(video.views_count),
+                                                    'comments_count': reduce_number(video.comments_count),
+                                                    'published_at': video.published_at,
+                                                    'page_token': video.page.current_page_token,
+                                                    }
+    
+    return JsonResponse(data=data)
+
+def create_video(video, channel):
+    video_id=video['snippet']['resourceId']['videoId']
+    new_video = Video(video_id=video_id,
+                    published_at = video['snippet']['publishedAt'][:10],
+                    title = video['snippet']['title'],
+                    photo = video['snippet']['thumbnails']['medium']['url'], 
+                    channel=channel
+                    )   
+                
+    detail_info = ApiMethods.get_video_detail_info(video_id)
+
+    likes_count = int(detail_info['items'][0]['statistics']['likeCount'])
+    dislikes_count = int(detail_info['items'][0]['statistics']['dislikeCount'])
+
+    new_video.views_count = int(detail_info['items'][0]['statistics']['viewCount'])
+    new_video.comments_count = int(detail_info['items'][0]['statistics']['commentCount'])
+    new_video.likes_count = likes_count    
+    new_video.dislikes_count = dislikes_count
+    if likes_count+dislikes_count == 0:
+        new_video.average_likes_count = 0
+        new_video.average_dislikes_count = 0
+    else:
+        new_video.average_likes_count = int(likes_count/(likes_count + dislikes_count)*100)*2
+        new_video.average_dislikes_count = int(dislikes_count/(likes_count + dislikes_count)*100)*2
+    new_video.save()
+    return new_video
+
+def remove_deleted_videos(channel):
+    channel_videos_count = channel.videos_list.count()
+    new_videos_set = set()
+    old_videos_set = set()
+    pages_count = math.ceil(channel_videos_count/VIDEO_PAGE_MAX_RESULTS)
+    current_page_token = None
+    for page_num in range(pages_count):
+        current_page = ApiMethods.get_videos_page(channel_id=channel.channel_id,
+                                                max_results=VIDEO_PAGE_MAX_RESULTS,
+                                                page_token=current_page_token)
+        if current_page_token == None:
+            current_page_token = 'First'
+        try:
+            next_page_token = current_page['nextPageToken']
+        except:
+            next_page_token = 'Last'
+
+        try:
+            current_videos_page = channel.pages_list.get(
+                        current_page_token=current_page_token)
+        except:
+            current_videos_page = VideoPage(current_page_token=current_page_token,
+                                            next_page_token=next_page_token,
+                                            channel=channel
+                                            )
+            current_videos_page.save()
+        for video in current_page['items']:
+            video_id = video['snippet']['resourceId']['videoId']
+            old_video = channel.videos_list.get(video_id=video_id)
+            old_video.page = current_videos_page
+            old_video.save()
+            new_videos_set.add(video_id)
+        
+        current_page_token = next_page_token
+    
+    for video in channel.videos_list.all():
+        old_videos_set.add(video.video_id)
+
+    different_set = old_videos_set.symmetric_difference(new_videos_set)
+    for video_id in different_set:       
+        channel.videos_list.get(video_id=video_id).delete()
+    
+    return different_set
+        

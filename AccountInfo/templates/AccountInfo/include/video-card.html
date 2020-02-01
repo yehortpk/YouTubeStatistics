@@ -3,11 +3,11 @@
     <div class="card-body">
       <div class="card-title-block">
       <h5>
+        <div card-title>
         <a href="https://www.youtube.com/watch?v={{video.video_id}}" target="_blank" title="{{video.title}}">
-          <div card-title>
-            {{video.title|truncatechars:21}}
-          </div>
+          {{video.title|truncatechars:21}}
         </a>
+      </div>
       </h5>
     </div>
       <div class="detail-info-block">
@@ -24,7 +24,7 @@
       <div class="rating-block row ml-3">
           <div class="likes-block">
             <p>{{video.likes_count}}</p>
-            <div class="likes-count-block" style="width: {{video.average_likes}}px;"></div>
+            <div class="likes-count-block" style='width: {{video.average_likes}}px'></div>
           </div>
           <div class="dislikes-block">
             <p>{{video.dislikes_count}}</p>
