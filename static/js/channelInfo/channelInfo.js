@@ -1,5 +1,5 @@
 import { getNewVideosHTML } from '/static/js/include/cards.js';
-const TOTAL_UPD_INTERVAL = 30*1000;
+const TOTAL_UPD_INTERVAL = 2*60*1000;
 const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
