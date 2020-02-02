@@ -25,9 +25,18 @@
           <input class="form-control mr-sm-2" type="search" placeholder="Ссылка на канал" aria-label="Search" name='url'>
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
+        <button class="btn btn-primary log-in-btn ml-3" onClick='location.href="{{authorization_url}}"' {% if is_authorized %} style='display:none;' {% endif %}>
+            Войти
+        </button>     
+        <button class="btn btn-primary log-out-btn" {% if not is_authorized %} style='display:none;' {% endif %}>
+            Выйти
+        </button>  
       </nav>
     <main>
         <div class="container-fluid mt-3">
+            <form method="POST" class="update-token">
+                {% csrf_token %}
+            </form>
             {% block content %}
             {% endblock content %}
         </div>       

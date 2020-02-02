@@ -1,5 +1,4 @@
 import { getNewVideosHTML } from '/static/js/include/cards.js';
-const TOTAL_UPD_INTERVAL = 2*60*1000;
 const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
@@ -70,7 +69,7 @@ function setPagesLifeCycle(channel_id){
 }
 
 function totalVideosUpdate(){
-    var data = $('.update-videos-list-form').serialize();
+    var data = $('.update-token').serialize();
     $.ajax({
         type: 'POST',
         url: `/update_videos_list/${channel_id}/`,
@@ -87,7 +86,6 @@ function totalVideosUpdate(){
             }
             if(responseData['next_page_token'] == LAST_PAGE_TOKEN)
                     $(".next-videos-page-btn").css('display', 'none');
-                    setTimeout(totalVideosUpdate, TOTAL_UPD_INTERVAL);
         },
         dataType: 'json', 
     });
@@ -116,27 +114,31 @@ $(".next-videos-page-btn").click(function(e) {
     });               
 })
 
-$('.update-videos-list-form').submit(function(e){
-    e.preventDefault();
-    totalVideosUpdate();
-})
-
 function clearAllTymeouts(){
     var id = window.setTimeout(function() {}, 0);
 
     while (id--) {
-        window.clearTimeout(id);
+        window.clearTimeout(id); // will do nothing if no timeout with id is present
     }
 }
 
+$('.log-out-btn').click(function(){
+    clearAllTymeouts();
+    location.replace('/log_out/');
+})
+
+
 $(document).ready(function (){
-    setTimeout(totalVideosUpdate, TOTAL_UPD_INTERVAL);
     if($('.next-page-token').val() == ''){
         createFirstVideosPage();
     }
-    else
+    else{
         $(".next-videos-page-btn").css('display', 'block');
+        totalVideosUpdate();
+    }
+        
     if ($(".next-page-token").val() == LAST_PAGE_TOKEN)
         $(".next-videos-page-btn").css('display', 'none');
+    clearAllTymeouts();
     setPagesLifeCycle(channel_id, INTERVAL);
 })

@@ -15,7 +15,7 @@ class AccountDetail(View):
         if(request.session.get('credentials') != None and request.session['credentials'].get('account_id') != None):
             ApiMethods.connect(request)
             my_account = Account.objects.get(account_id=request.session['credentials']['account_id'])
-            if  request.session.get('channel_to_delete')!= None:
+            if request.session.get('channel_to_delete')!= None:
                 my_account.subscriptions.get(channel_id=request.session['channel_to_delete']).delete()
                 request.session.pop('channel_to_delete')
             next_page_token = my_account.pages_list.last().next_page_token
@@ -56,7 +56,6 @@ class AccountDetail(View):
         account.save()
 
         request.session['credentials']['account_id'] = account.account_id
-        print(request.session['credentials']['account_id']) 
         response_data = create_channels_page(request, FIRST_PAGE_TOKEN)
         return redirect('index_url')
     
@@ -65,7 +64,9 @@ class AccountDetail(View):
         account_id = request.session['credentials']['account_id']
         account = Account.objects.get(account_id=account_id).delete()
         request.session.pop('credentials')
-        return JsonResponse(data={})
+        if request.session.get('channel_to_delete')!= None:
+            request.session.pop('channel_to_delete')
+        return redirect('index_url')
 
 class ChannelDetail(View):
     def get(self, request, channel_id):
@@ -85,7 +86,8 @@ class ChannelDetail(View):
             next_page_token = channel.pages_list.all().last().next_page_token  
         return render(request, "AccountInfo/channelInfo.html", context={'channel': channel,
                                                              'page_token': next_page_token,
-                                                             'videos_list': channel.videos_list.all().order_by('-published_at')})
+                                                             'videos_list': channel.videos_list.all().order_by('-published_at'),
+                                                             'is_authorized': True})
 
     
     def get_channel_detail(self, request, channel_id):
@@ -370,6 +372,7 @@ def get_token(request):
     return AccountDetail.log_in(request)
 
 def find_channel(request):
+    if request.session.get('credentials') == None: return HttpResponseForbidden()
     url = request.POST.get('url')
     channel_id = url.rsplit('/', 1)[-1]
     channel_info = ApiMethods.get_channel_detail(channel_id)
@@ -629,6 +632,7 @@ def remove_deleted_channels(account):
     return different_set
 
 def update_channels_list(request):
+    if(request.session.get('credentials')==None): return JsonResponse(data={'data':{}})
     ApiMethods.connect(request)
     account = Account.objects.get(account_id=request.session['credentials']['account_id'])
 

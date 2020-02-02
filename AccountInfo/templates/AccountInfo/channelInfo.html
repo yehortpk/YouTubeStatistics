@@ -33,10 +33,6 @@
             </div>            
         </div>         
     </div>
-    <form method="POST" class="update-videos-list-form ml-2">
-        {% csrf_token %}
-        <input class="btn btn-primary" type="submit"/>                
-    </form> 
     <div class="row videos-block ml-3">
         {% for video in videos_list %}              
             {% include 'AccountInfo/include/video-card.html' %}   

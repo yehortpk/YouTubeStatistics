@@ -3,7 +3,6 @@ const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
 const LAST_PAGE_TOKEN = 'Last'
-const TOTAL_UPD_INTERVAL = 2*60*1000;
 
 function updateChannelsPage(pageToken){
     $.ajax({
@@ -66,25 +65,8 @@ $(".next-channels-page-btn").click(function(e) {
     })
 });
 
-$('.log-out-btn').click(function(e){            
-    e.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: '/log_out/',
-        async: true,
-        data: $(this).parent().serialize(),
-        success: function(responseData){ 
-            $('.channels-block').empty();
-            $('.log-in-btn').css('display', 'block');
-            $('.log-out-btn').css('display', 'none');                
-            $(".next-channels-page-btn").css('display', 'none');
-            setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
-        }
-    });
-});
-
 function totalChannelsUpdate(){
-    var data = $('.update-channels-list-form').serialize();
+    var data = $('.update-token').serialize();
     $.ajax({
         type: 'POST',
         url: `/update_channels_list/`,
@@ -100,23 +82,34 @@ function totalChannelsUpdate(){
             }
             if(responseData['next_page_token'] == LAST_PAGE_TOKEN)
                     $(".next-channels-page-btn").css('display', 'none');
-                    setTimeout(totalChannelsUpdate, TOTAL_UPD_INTERVAL);
         },
         dataType: 'json', 
     });
 }
 
-$('.update-channels-list-form').submit(function(e){
-    e.preventDefault();
-    totalChannelsUpdate();
-})
+function clearAllTymeouts(){
+    var id = window.setTimeout(function() {}, 0);
 
+    while (id--) {
+        window.clearTimeout(id); // will do nothing if no timeout with id is present
+    }
+}
+
+$('.log-out-btn').click(function(){
+    clearAllTymeouts();
+    location.replace('/log_out/');
+})
 
 $(document).ready(function (){
     if($('.log-in-btn').css('display') == 'none'){
+        totalChannelsUpdate();
+        clearAllTymeouts();
         setPagesLifeCycle();
         if($('.next-page-token').val() != LAST_PAGE_TOKEN){
             $(".next-channels-page-btn").css('display', 'block');
         }  
+    }
+    else{
+        clearAllTymeouts();
     }              
 });
