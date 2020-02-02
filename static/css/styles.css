@@ -58,3 +58,7 @@ body{
 .card-title{
     max-height:30px;
 }
+
+.find-channel-field{
+    min-width:500px;
+}

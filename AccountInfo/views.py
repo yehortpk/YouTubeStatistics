@@ -450,16 +450,16 @@ def update_videos_list(request, channel_id):
     if  len(new_videos) != 0 or len(removed_videos) != 0:    
         for video in channel.videos_list.all().order_by('-published_at'):
             data['data'][video.video_id] = {'photo': video.photo,
-                                                    'title': video.title,
-                                                    'likes_count': reduce_number(video.likes_count),
-                                                    'dislikes_count': reduce_number(video.dislikes_count),
-                                                    'average_likes': reduce_number(video.average_likes),
-                                                    'average_dislikes': reduce_number(video.average_dislikes),
-                                                    'views_count': reduce_number(video.views_count),
-                                                    'comments_count': reduce_number(video.comments_count),
-                                                    'published_at': video.published_at,
-                                                    'page_token': video.page.current_page_token,
-                                                    }
+                                            'title': video.title,
+                                            'likes_count': reduce_number(video.likes_count),
+                                            'dislikes_count': reduce_number(video.dislikes_count),
+                                            'average_likes': reduce_number(video.average_likes),
+                                            'average_dislikes': reduce_number(video.average_dislikes),
+                                            'views_count': reduce_number(video.views_count),
+                                            'comments_count': reduce_number(video.comments_count),
+                                            'published_at': video.published_at,
+                                            'page_token': video.page.current_page_token,
+                                            }
     
     return JsonResponse(data=data)
 
