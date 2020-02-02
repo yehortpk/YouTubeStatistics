@@ -3,6 +3,7 @@ const INTERVAL = 60*1000;
 const DELAY = 47*1000;
 const FIRST_PAGE_TOKEN = 'First'
 const LAST_PAGE_TOKEN = 'Last'
+const TOTAL_UPD_INTERVAL = 2*60*1000;
 
 function updateChannelsPage(pageToken){
     $.ajax({
@@ -81,6 +82,35 @@ $('.log-out-btn').click(function(e){
         }
     });
 });
+
+function totalChannelsUpdate(){
+    var data = $('.update-channels-list-form').serialize();
+    $.ajax({
+        type: 'POST',
+        url: `/update_channels_list/`,
+        async: true,
+        data: data,
+        success: function(responseData) {
+            if(Object.keys(responseData['data']).length != 0){
+                $('.channels-block').empty();
+                var newChannelsHTML = getNewChannelsHTML(responseData['data']);
+                $('.channels-block').append(newChannelsHTML);
+                $(".next-page-token").val(responseData['next_page_token']);             
+                setPagesLifeCycle();
+            }
+            if(responseData['next_page_token'] == LAST_PAGE_TOKEN)
+                    $(".next-channels-page-btn").css('display', 'none');
+                    setTimeout(totalChannelsUpdate, TOTAL_UPD_INTERVAL);
+        },
+        dataType: 'json', 
+    });
+}
+
+$('.update-channels-list-form').submit(function(e){
+    e.preventDefault();
+    totalChannelsUpdate();
+})
+
 
 $(document).ready(function (){
     if($('.log-in-btn').css('display') == 'none'){

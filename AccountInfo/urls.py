@@ -17,4 +17,5 @@ urlpatterns = [
     path('get_token/', get_token, name='get_token'),
     path('find_channel/', find_channel, name='find_channel_url'),
     path('update_videos_list/<channel_id>/', update_videos_list, name='update_videos_list_url'),
+    path('update_channels_list/', update_channels_list, name='update_channels_list_url'),
 ]

@@ -21,7 +21,7 @@ class AccountDetail(View):
             next_page_token = my_account.pages_list.last().next_page_token
             authorization_url = ApiMethods.get_flow(request)
             return render(request, "AccountInfo/index.html", context={
-                        'channels': my_account.subscriptions.all().order_by('page', 'created_at'),
+                        'channels': my_account.subscriptions.all().order_by('page', '-created_at'),
                         'is_authorized': True,
                         'page_token': next_page_token,
                         'authorization_url': authorization_url
@@ -327,6 +327,7 @@ def create_channels_page(request, page_token):
     return JsonResponse(data=new_channels_page)
  
 def update_channels_page(request, page_token):
+    ApiMethods.connect(request)
     if request.method == 'POST' and request.is_ajax():
         account_id = request.session['credentials']['account_id']
         channels_page = ChannelsPageDetail(account_id = account_id, 
@@ -345,6 +346,7 @@ def create_videos_page(request, channel_id, page_token):
         return HttpResponseForbidden()
 
 def update_videos_page(request, channel_id, page_token):
+    ApiMethods.connect(request)
     if request.method == 'POST' and request.is_ajax():
         videos_page = VideosPageDetail(channel_id, page_token)
         videos_page.update_videos_page()
@@ -431,6 +433,7 @@ def create_new_videos(channel):
     return new_videos_list
 
 def update_videos_list(request, channel_id):
+    ApiMethods.connect(request)
     account = Account.objects.get(account_id=request.session['credentials']['account_id'])
     channel = account.subscriptions.get(channel_id=channel_id)
 
@@ -441,7 +444,7 @@ def update_videos_list(request, channel_id):
     data['next_page_token'] = channel.pages_list.last().next_page_token
     data['data'] = {}
     
-    if not len(new_videos) == 0 and len(removed_videos) == 0:    
+    if  len(new_videos) != 0 or len(removed_videos) != 0:    
         for video in channel.videos_list.all().order_by('-published_at'):
             data['data'][video.video_id] = {'photo': video.photo,
                                                     'title': video.title,
@@ -522,9 +525,127 @@ def remove_deleted_videos(channel):
     for video in channel.videos_list.all():
         old_videos_set.add(video.video_id)
 
-    different_set = old_videos_set.symmetric_difference(new_videos_set)
+    different_set = old_videos_set.difference(new_videos_set)
     for video_id in different_set:       
         channel.videos_list.get(video_id=video_id).delete()
     
     return different_set
+
+def create_new_channels(account):
+    new_channels_list = []
+    current_page_token = None
+    while(current_page_token!='Last'):
+        channels_page = ApiMethods.get_channels_page(CHANNEL_PAGE_MAX_RESULTS, current_page_token)
+        if current_page_token == None:
+                    current_page_token = 'First'
         
+        next_page_token = channels_page.get('nextPageToken')
+        if next_page_token == None:
+            next_page_token = 'Last'
+        
+        for channel in channels_page['items']:
+            channel_id = 'UU' + channel['snippet']['resourceId']['channelId'][2:]
+            try:
+                current_page = account.pages_list.get(current_page_token=current_page_token)
+            except:
+                current_page = ChannelPage(current_page_token=current_page_token, 
+                                            next_page_token=next_page_token,
+                                            account=account)
+                current_page.save()
+            try:
+                current_channel = account.subscriptions.get(channel_id=channel_id)
+                return new_channels_list
+            except:
+                new_channel = create_channel(account, channel)
+                new_channel.page = current_page
+                new_channel.save()
+                new_channels_list.append(new_channel.title)
+
+        current_page_token = next_page_token
+    return new_channels_list
+
+def create_channel(account, channel):
+    channel_id = 'UU' + channel['snippet']['resourceId']['channelId'][2:]
+    new_channel = Channel(acc=account,
+                        title=channel['snippet']['title'],
+                        channel_id=channel_id, 
+                        photo=channel['snippet']['thumbnails']['high']['url'], 
+                        channel_url='https://www.youtube.com/channel/UU' + channel_id[2:], 
+                        videos_count=channel['contentDetails']['totalItemCount'],
+                        description=channel['snippet']['description'],
+                        )   
+    new_channel.save()
+    return new_channel
+
+def remove_deleted_channels(account):
+    channels_count = account.subscriptions.count()
+    new_channels_set = set()
+    old_channels_set = set()
+    pages_count = math.ceil(channels_count/CHANNEL_PAGE_MAX_RESULTS)
+    
+    current_page_token = None
+    for page_num in range(pages_count):
+        current_page = ApiMethods.get_channels_page(max_results=CHANNEL_PAGE_MAX_RESULTS,
+                                                page_token=current_page_token)
+        if current_page_token == None:
+            current_page_token = 'First'
+        try:
+            next_page_token = current_page['nextPageToken']
+        except:
+            next_page_token = 'Last'
+
+        try:
+            current_channels_page = account.pages_list.get(
+                        current_page_token=current_page_token)
+        except:
+            current_channels_page = ChannelPage(current_page_token=current_page_token,
+                                                next_page_token=next_page_token,
+                                                account=account
+                                                )
+            current_channels_page.save()
+        for channel in current_page['items']:
+            channel_id = channel['snippet']['resourceId']['channelId']
+            title = channel['snippet']['title']
+            try:
+                old_channel = account.subscriptions.get(channel_id=channel_id)
+                old_channel.page = current_channels_page
+                old_channel.save()
+            except:
+                pass
+            new_channels_set.add('UU'+channel_id[2:])
+        
+        current_page_token = next_page_token
+    
+    for channel in account.subscriptions.all():
+        old_channels_set.add(channel.channel_id)
+
+    print('old: ', old_channels_set)
+    print('new: ', new_channels_set)
+    different_set = old_channels_set.difference(new_channels_set)
+    print(different_set)
+    for channel_id in different_set:       
+        account.subscriptions.get(channel_id=channel_id).delete()
+    
+    return different_set
+
+def update_channels_list(request):
+    ApiMethods.connect(request)
+    account = Account.objects.get(account_id=request.session['credentials']['account_id'])
+
+    new_channels = create_new_channels(account)
+    removed_channels = remove_deleted_channels(account)
+
+    data = {}
+    data['next_page_token'] = account.pages_list.last().next_page_token
+    data['data'] = {}
+    
+    if  len(new_channels) != 0 or len(removed_channels) != 0:    
+        for channel in account.subscriptions.all().order_by('page', '-created_at'):
+            data['data'][channel.channel_id] = {'photo': channel.photo,
+                                                'title': channel.title,
+                                                'videos_count': channel.videos_count,
+                                                'channel_url': channel.channel_url,
+                                                'page_token': channel.page.current_page_token
+                                                }
+    
+    return JsonResponse(data=data)

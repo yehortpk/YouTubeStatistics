@@ -18,6 +18,10 @@
     <form method="POST" class="update-channels-block">
         {% csrf_token %}
     </form>
+    <form method="POST" class="update-channels-list-form ml-2">
+        {% csrf_token %}
+        <input class="btn btn-primary" type="submit"/>                
+    </form> 
     <div class="row channels-block mt-3 ml-3">
         {% for channel in channels %}            
             {% include 'AccountInfo/include/channel-card.html' %}  
