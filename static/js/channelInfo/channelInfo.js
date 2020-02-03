@@ -18,7 +18,7 @@ function createFirstVideosPage(){
             $(".next-page-token").val(nextPageTokenValue);
             var newVideosHTML = getNewVideosHTML(responseData['data']);
             $('.videos-block').append(newVideosHTML);
-            setPageUpdTimeout(channel_id, FIRST_PAGE_TOKEN, INTERVAL);
+            setPageUpdTimeout(FIRST_PAGE_TOKEN, INTERVAL);
             if(nextPageTokenValue != LAST_PAGE_TOKEN)
                 $(".next-videos-page-btn").css('display', 'block');
         },
@@ -26,10 +26,10 @@ function createFirstVideosPage(){
     });
 }
 
-function updateVideosPage(channelId, pageToken){
+function updateVideosPage(pageToken){
     $.ajax({
         type: 'POST',
-        url: `/update_videos_page/${channelId}/${pageToken}`,
+        url: `/update_videos_page/${channel_id}/${pageToken}`,
         async: true,
         data: $('.next-videos-page-form').serialize(),
         success: function(responseData){
@@ -44,26 +44,27 @@ function updateVideosPage(channelId, pageToken){
                 ratingBlock.find('.likes-block').find('.likes-count-block').css('width', currentVideo.average_likes + 'px');
                 ratingBlock.find('.dislikes-block').find('.dislikes-count-block').css('width', currentVideo.average_dislikes + 'px');                
             });
-            setPageUpdTimeout(channelId, pageToken, INTERVAL);
+            setPageUpdTimeout(pageToken, INTERVAL);
         },
         dataType: 'json',
     });
 }
 
-function setPageUpdTimeout(channel_id, pageToken, interval){
-    setTimeout(updateVideosPage, interval, channel_id, pageToken);
+function setPageUpdTimeout(pageToken, interval){
+    setTimeout(updateVideosPage, interval, pageToken);
 }
 
-function setPagesLifeCycle(channel_id){
+function setPagesLifeCycle(){
     var delay = 0;
     var tokens_list = []
     $('.video-card').each(function(){
         var token = $(this).data('pageToken');
         if(tokens_list.indexOf(token) == -1)
-            tokens_list.push(token);
+            tokens_list.push(token);           
     })
+    console.log(tokens_list);
     tokens_list.forEach(function(token){
-        setPageUpdTimeout(channel_id, token, INTERVAL+delay);
+        setPageUpdTimeout(token, INTERVAL+delay);
         delay+=DELAY;
     })
 }
@@ -77,15 +78,15 @@ function totalVideosUpdate(){
         data: data,
         success: function(responseData) {
             if(Object.keys(responseData['data']).length != 0){
-                console.log(Object.keys(responseData['data']).length);
                 $('.videos-block').empty();
                 var newVideosHTML = getNewVideosHTML(responseData['data']);
                 $('.videos-block').append(newVideosHTML);
                 $(".next-page-token").val(responseData['next_page_token']);             
-                setPagesLifeCycle();
             }
             if(responseData['next_page_token'] == LAST_PAGE_TOKEN)
                     $(".next-videos-page-btn").css('display', 'none');
+            clearAllTymeouts();
+            setPagesLifeCycle();
         },
         dataType: 'json', 
     });
@@ -108,7 +109,7 @@ $(".next-videos-page-btn").click(function(e) {
                 nextPageTokenBlock.val(responseData['next_page_token']);
             var newVideosHTML = getNewVideosHTML(responseData['data']);
             $('.videos-block').append(newVideosHTML);
-            setPageUpdTimeout(channel_id, nextPageTokenValue, INTERVAL);
+            setPageUpdTimeout(nextPageTokenValue, INTERVAL);
         },
         dataType: 'json',
     });               
@@ -139,6 +140,4 @@ $(document).ready(function (){
         
     if ($(".next-page-token").val() == LAST_PAGE_TOKEN)
         $(".next-videos-page-btn").css('display', 'none');
-    clearAllTymeouts();
-    setPagesLifeCycle(channel_id, INTERVAL);
 })

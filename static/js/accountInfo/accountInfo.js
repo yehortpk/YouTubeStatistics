@@ -40,7 +40,8 @@ function setPagesLifeCycle(){
     tokens_list.forEach(function(token){
         setPageUpdTimeout(token, INTERVAL+delay);
         delay+=DELAY;
-    })   
+    })
+    console.log(tokens_list);   
 }
 
 $(".next-channels-page-btn").click(function(e) {
@@ -78,10 +79,11 @@ function totalChannelsUpdate(){
                 var newChannelsHTML = getNewChannelsHTML(responseData['data']);
                 $('.channels-block').append(newChannelsHTML);
                 $(".next-page-token").val(responseData['next_page_token']);             
-                setPagesLifeCycle();
             }
             if(responseData['next_page_token'] == LAST_PAGE_TOKEN)
                     $(".next-channels-page-btn").css('display', 'none');
+            clearAllTymeouts();
+            setPagesLifeCycle();
         },
         dataType: 'json', 
     });
@@ -103,8 +105,6 @@ $('.log-out-btn').click(function(){
 $(document).ready(function (){
     if($('.log-in-btn').css('display') == 'none'){
         totalChannelsUpdate();
-        clearAllTymeouts();
-        setPagesLifeCycle();
         if($('.next-page-token').val() != LAST_PAGE_TOKEN){
             $(".next-channels-page-btn").css('display', 'block');
         }  

@@ -22,8 +22,11 @@
         <a href="{% url 'index_url' %}" class="navbar-brand">YouTube Statistics</a>
         <form class="form-inline" method="POST" action="{% url 'find_channel_url' %}">
             {% csrf_token %}
-          <input class="form-control mr-sm-2 find-channel-field" type="search" placeholder="Ссылка на канал" aria-label="Search" name='url'>
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          <input class="form-control mr-sm-2 find-channel-field" type="search" placeholder="Ссылка на канал" aria-label="Search" name='url' 
+          {% if not is_authorized %} style='display:none;' {% endif %}>
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit" {% if not is_authorized %} style='display:none;' {% endif %}>
+            Search
+        </button>
         </form>
         <button class="btn btn-primary log-in-btn ml-3" onClick='location.href="{{authorization_url}}"' {% if is_authorized %} style='display:none;' {% endif %}>
             Войти
