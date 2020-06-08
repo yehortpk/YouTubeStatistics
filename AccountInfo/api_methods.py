@@ -6,6 +6,7 @@ import googleapiclient.discovery
 import googleapiclient.errors
 import google.oauth2.credentials
 import json
+from YouTubeApi.settings import BASE_DIR
 
 scopes = ['https://www.googleapis.com/auth/youtube.readonly',
            'https://www.googleapis.com/auth/userinfo.email',
@@ -15,10 +16,11 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 api_service_name = "youtube"
 api_version = "v3"
-client_secrets_file = "static/info.json"
+client_secrets_file = BASE_DIR +  "/static/info.json"
 
 #redirect_uri = 'http://localhost:8001/get_token/'
-redirect_uri = 'https://youtube-analytics.herokuapp.com/get_token/'
+domain_name = 'http://vpsfirst.test.ru/'
+redirect_uri = domain_name + 'get_token/'
 
 class ApiMethods:
     youtube = None
