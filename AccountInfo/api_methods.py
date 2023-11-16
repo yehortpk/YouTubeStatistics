@@ -1,40 +1,37 @@
-from django.shortcuts import render, redirect, reverse
-from google.oauth2.credentials import Credentials
 import os
+
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
-import google.oauth2.credentials
-import json
+from google.oauth2.credentials import Credentials
+
 from YouTubeApi.settings import BASE_DIR
 
 scopes = ['https://www.googleapis.com/auth/youtube.readonly',
-           'https://www.googleapis.com/auth/userinfo.email',
-           'openid',
-           'https://www.googleapis.com/auth/userinfo.profile']
+          'https://www.googleapis.com/auth/userinfo.email',
+          'openid',
+          'https://www.googleapis.com/auth/userinfo.profile']
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 api_service_name = "youtube"
 api_version = "v3"
-client_secrets_file = BASE_DIR +  "/static/info.json"
-
-#redirect_uri = 'http://localhost:8001/get_token/'
-domain_name = 'http://vpsfirst.test.ru/'
-redirect_uri = domain_name + 'get_token/'
+client_secrets_file = os.path.join(BASE_DIR, "static/info.json")
+redirect_uri = "http://localhost:8000/token"
 
 class ApiMethods:
     youtube = None
+
     @staticmethod
-    def connect(request, authorization_response=None, state=None):   
-        if request.session.get('credentials') == None:
+    def connect(request, authorization_response=None, state=None):
+        if request.session.get('credentials') is None:
             flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-                                                client_secrets_file, 
+                                                client_secrets_file,
                                                 scopes=scopes,
                                                 state=state)
-            flow.redirect_uri = redirect_uri            
-            access_token = flow.fetch_token(authorization_response=authorization_response)
+            flow.redirect_uri = redirect_uri
+            flow.fetch_token(authorization_response=authorization_response)
             credentials = flow.credentials
-            
+
             request.session['credentials'] = {
                 'token': credentials.token,
                 'refresh_token': credentials.refresh_token,
@@ -56,10 +53,10 @@ class ApiMethods:
         ApiMethods.youtube = googleapiclient.discovery.build(api_service_name, api_version, credentials=credentials)
 
     @staticmethod
-    def get_flow(request):
+    def get_flow():
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-                                                    client_secrets_file,
-                                                    scopes=scopes)
+            client_secrets_file,
+            scopes=scopes)
         flow.redirect_uri = redirect_uri
 
         authorization_url, state = flow.authorization_url(
@@ -78,24 +75,24 @@ class ApiMethods:
 
     @staticmethod
     def get_videos_page(channel_id, max_results, page_token=None):
-        if page_token == None:            
+        if page_token is None:
             query = ApiMethods.youtube.playlistItems().list(
                 part="snippet",
                 playlistId=channel_id,
                 maxResults=max_results
             )
         else:
-             query = ApiMethods.youtube.playlistItems().list(
+            query = ApiMethods.youtube.playlistItems().list(
                 part="snippet",
                 playlistId=channel_id,
                 pageToken=page_token,
                 maxResults=max_results
-             )
+            )
 
         videos_page = query.execute()
         return videos_page
 
-    @staticmethod  
+    @staticmethod
     def get_video_detail_info(video_id):
         query = ApiMethods.youtube.videos().list(
             part="statistics",
@@ -106,15 +103,14 @@ class ApiMethods:
 
     @staticmethod
     def get_channels_page(max_results, page_token=None):
-        print(1)
         if page_token:
             query = ApiMethods.youtube.subscriptions().list(
                 part="snippet, contentDetails",
                 mine=True,
                 maxResults=max_results,
-                pageToken = page_token,
+                pageToken=page_token,
             )
-        else:                
+        else:
             query = ApiMethods.youtube.subscriptions().list(
                 part="snippet, contentDetails",
                 maxResults=max_results,
@@ -122,8 +118,7 @@ class ApiMethods:
             )
 
         channels_page = query.execute()
-        next_page = channels_page.get('nextPageToken')
-        return channels_page           
+        return channels_page
 
     @staticmethod
     def get_channel_detail(channel_id):
@@ -134,8 +129,8 @@ class ApiMethods:
         channel_detail = query.execute()
         if channel_detail['pageInfo']['totalResults'] == 0:
             query = ApiMethods.youtube.channels().list(
-            part="snippet,statistics,brandingSettings",
-            forUsername=channel_id
+                part="snippet,statistics,brandingSettings",
+                forUsername=channel_id
             )
             channel_detail = query.execute()
         return channel_detail

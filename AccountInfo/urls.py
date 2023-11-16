@@ -1,5 +1,5 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+
 from .views import *
 
 urlpatterns = [
@@ -11,10 +11,8 @@ urlpatterns = [
     path('update_channels_page/<page_token>', update_channels_page),
     path('log_in/', AccountDetail.log_in, name = 'log_in_url'),
     path('log_out/', AccountDetail.log_out, name = 'log_out_url'),
-    path('policy', get_policy, name='policy_url'),
-    path('terms', get_terms, name='terms_url'),
     path('google34ecf22213c98a0d.html', confirm_html, name='confirm_html_url'),
-    path('get_token/', get_token, name='get_token'),
+    path('token/', get_token, name='get_token'),
     path('find_channel/', find_channel, name='find_channel_url'),
     path('update_videos_list/<channel_id>/', update_videos_list, name='update_videos_list_url'),
     path('update_channels_list/', update_channels_list, name='update_channels_list_url'),
