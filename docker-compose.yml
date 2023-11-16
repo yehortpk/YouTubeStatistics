@@ -1,0 +1,36 @@
+services:
+  ### DEBUG services
+
+  app:
+    build:
+      dockerfile: app.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - db.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - net
+  db:
+    image: mysql
+    env_file:
+      - db.env
+    volumes:
+      - type: bind
+        source: /volumes/mysql/data
+        target: /var/lib/mysql
+    networks:
+      - net
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 10
+
+networks:
+  net:
+    driver: bridge
