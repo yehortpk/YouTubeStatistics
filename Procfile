@@ -1,1 +1,0 @@
-web: gunicorn YouTubeApi.wsgi --log-file -
